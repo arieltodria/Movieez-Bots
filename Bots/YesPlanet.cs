@@ -15,7 +15,7 @@ using Movieez.Resources;
 
 namespace Movieez
 {
-    class YesPlanetBot : Bot
+    class YesPlanet : Bot
     {
         int i = 1;
         string Name = "YesPlanet";
@@ -27,7 +27,7 @@ namespace Movieez
         public List<Theater> TheatersList;
         public List<Screening> ScreeningsList;
 
-        public YesPlanetBot()
+        public YesPlanet()
         {
             initDriver(MainUrl);
             MoviesList = new List<Movie>();

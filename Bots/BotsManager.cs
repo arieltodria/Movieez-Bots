@@ -22,7 +22,7 @@ namespace Movieez
         [Test]
         public void LaunchYesPlanetBot()
         {
-            YesPlanetBot yesPlanet = new YesPlanetBot();
+            YesPlanet yesPlanet = new YesPlanet();
             yesPlanet.run();
         } 
 
@@ -30,6 +30,12 @@ namespace Movieez
         {
             CinemaCityBot cinemaCity = new CinemaCityBot();
             cinemaCity.run();
+        }
+
+        public void LaunchHotCinemaBot()
+        {
+            HotCinema hotCinema = new HotCinema();
+            hotCinema.run();
         }
 
         [TearDown]
