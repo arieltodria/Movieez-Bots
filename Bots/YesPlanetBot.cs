@@ -1,0 +1,443 @@
+﻿using System;
+using System.Collections.ObjectModel;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Globalization;
+using System.Reflection;
+using OpenQA.Selenium;
+using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.Interactions;
+using System.Text.RegularExpressions;
+using Movieez.Bots;
+using Movieez.Resources;
+
+namespace Movieez
+{
+    class YesPlanetBot : Bot
+    {
+        int i = 1;
+        string Name = "YesPlanet";
+        string MainUrl = "https://www.yesplanet.co.il/?lang=iw_IL#/";
+        // WebElements
+        IReadOnlyCollection<IWebElement> allMoviesElements;
+        // Data obj
+        public List<Movie> MoviesList;
+        public List<Theater> TheatersList;
+        public List<Screening> ScreeningsList;
+
+        public YesPlanetBot()
+        {
+            initDriver(MainUrl);
+            MoviesList = new List<Movie>();
+            TheatersList = new List<Theater>();
+            ScreeningsList = new List<Screening>();
+            _movieezApiUtils = new MovieezApiUtils(MovieezApiUtils.e_Theaters.YesPlanet);
+        }
+
+        public void run()
+        {
+            this.parseAllMovies();
+            printResults();
+        }
+
+        // Print lists of all parsed movies and showtimes
+        public void printResults()
+        {
+            Console.WriteLine("####################################################");
+            Console.WriteLine("Total movies: " + MoviesList.Count);
+            Console.WriteLine("Total screenings: " + ScreeningsList.Count);
+            Console.WriteLine("####################################################");
+        }
+
+        // Load all movies in YesPlanet main page
+        public void loadAllMovies()
+        {
+            int i = 0;
+            wait();
+            scrollToLoadAllElements();
+            IWebElement loadMoreMoviesButton = getLoadMoreMoviesButton();
+            while(isLoadMoreMoviesButtonVisible())
+            {
+                wait();
+                Console.WriteLine("loadAllMovies(): loadMoreMoviesButton is visible" + (i++));
+                try
+                {
+                    Click(loadMoreMoviesButton, false, false);
+                }
+                catch (Exception)
+                {
+                    Console.WriteLine("Failed to click on loadMoreMoviesButton");
+                }
+            }
+            Console.WriteLine("loadAllMovies()> finished loading all movies");
+        }
+
+        // returns true if load more movies button is enabled
+        public bool isLoadMoreMoviesButtonVisible()
+        {
+            IReadOnlyCollection<IWebElement> loadMoreMovieBottons = FindElementsByDriver(By.CssSelector(YesPlanet_QueryStrings.loadMoreMoviesButton), true);
+            return (loadMoreMovieBottons.Count == 2);
+        }
+
+        // finds and returns load more movies button
+        IWebElement getLoadMoreMoviesButton()
+        {
+            IReadOnlyCollection<IWebElement> loadMoreMoviesButton = FindElementsByDriver(By.CssSelector(YesPlanet_QueryStrings.loadMoreMoviesButton), true);
+            return loadMoreMoviesButton.ToList()[0];
+        }
+
+        // Find all movie poster elements in YesPlanet home page
+        void initMoviesElementsLists(bool sort = false, bool loadAllMovies = true)
+        {
+            allMoviesElements = null;
+            if (loadAllMovies)
+                this.loadAllMovies();
+            allMoviesElements = FindElementsByDriver(By.CssSelector(YesPlanet_QueryStrings.allMoviesElements));
+        }
+
+        // Parses all movies in YesPlanet home page
+        void parseAllMovies()
+        {
+            int totalMovies;
+            List<string> moviesUrls = new List<string>();
+
+            initMoviesElementsLists();
+            totalMovies = allMoviesElements.Count;
+            for (int counter=0; counter < totalMovies; counter++)
+            {
+                Movie movie = new Movie();
+                movie.Urls.Add("YesPlanet", parseMovieUrl(allMoviesElements.ToList().ElementAt(counter)));
+                parseMovieMetadata(allMoviesElements.ToList().ElementAt(counter), movie);
+                // init movies list in new loaded home page
+                initMoviesElementsLists();
+            }
+        }
+
+        // Receives movie element of poster link. Goes to movie url and exctracts metadata.
+        void parseMovieMetadata(IWebElement movieElement, Movie movie)
+        {
+            goToUrl(movie.Urls[Name]);
+            closeCookiesPopUp();
+            movie.Name = parseMovieName();
+            movie.EnglishName = parseEnglishNameFromMovieUrl(movie.Urls[Name]);
+            movie.Duration = parseMovieDuraion();
+            movie.ReleaseDate = parseMovieReleaseDate();
+            if (movie.ReleaseDate.Year < 2020)
+                return;
+            movie.Plot = parseMoviePlot();
+            movie.TrailerUrl = parseMovieTrailerUrl();
+            // Parse inner metadata web element
+            IReadOnlyCollection<IWebElement> innerMetadataContainer = FindElementsByDriver(By.CssSelector(YesPlanet_QueryStrings.innerMetadataContainer));
+            goToElement(innerMetadataContainer.ToList()[0]);
+            int english_name_index = 0;
+            int genre_index = 1;
+            int cast_index = 2;
+            int director_index = 3;
+            int rating_index = 6;
+            movie.EnglishName = innerMetadataContainer.ToList()[english_name_index].GetAttribute("innerText");
+            Console.WriteLine(movie.EnglishName); // Debug
+            movie.Genre = innerMetadataContainer.ToList()[genre_index].GetAttribute("innerText");
+            movie.Cast = innerMetadataContainer.ToList()[cast_index].GetAttribute("innerText");
+            movie.Director = innerMetadataContainer.ToList()[director_index].GetAttribute("innerText");
+            movie.Rating = parseMovieRating(innerMetadataContainer.ToList()[rating_index].GetAttribute("innerText")); 
+            movie.PosterImage = FindElementByDriver(By.CssSelector(YesPlanet_QueryStrings.PosterImage), true).GetAttribute("src");
+            movie.MainImage = movie.PosterImage;
+
+            MoviesList.Add(movie);
+            _movieezApiUtils.PostMovie(movie);
+            parseScreenings(movie);
+            Console.WriteLine(MoviesList.Count + "/" + (i++));
+            goToUrl(MainUrl);
+            closeCookiesPopUp();
+        }
+
+        /************************************* Parse Movies' metadata helpers *************************************/
+        string parseMovieName()
+        {
+            IWebElement movieNameElement = FindElementByDriver(By.CssSelector(YesPlanet_QueryStrings.movieNameElement));
+            if (movieNameElement != null)
+                return movieNameElement.GetAttribute("innerText");
+            return "";
+        }
+
+        string parseMoviePlot()
+        {
+            IWebElement moviePlotElement = FindElementByDriver(By.ClassName(YesPlanet_QueryStrings.moviePlotElement));
+            if (moviePlotElement != null)
+                return moviePlotElement.GetAttribute("innerText");
+            return "";
+        }
+
+        string parseMovieTrailerUrl()
+        {
+            IWebElement movieTrailerElement = FindElementByDriver(By.CssSelector(YesPlanet_QueryStrings.movieTrailerElement));
+            if (movieTrailerElement != null)
+                return movieTrailerElement.GetAttribute("href");
+            return "";
+        }
+        string parseMovieUrl(IWebElement movieElement)
+        {
+            string movieUrl = movieElement.GetAttribute("href");
+            return movieUrl;
+        }
+
+        string parseEnglishNameFromMovieUrl(string url)
+        {
+            Regex re = new Regex(@".*\/(.*)\/.*");
+            Match m = re.Match(url);
+            if (m.Success)
+                return m.Value;
+            else
+            {
+                Console.WriteLine("Failef to parse url string: " + driver.Url);
+                return "";
+            }
+        }
+
+        string parseMovieDuraion()
+        {
+            IReadOnlyCollection<IWebElement> movieDurationElement = FindElementsByDriver(By.CssSelector(YesPlanet_QueryStrings.movieDurationElement));
+            return parseMovieDuration(movieDurationElement.ToList()[1].GetAttribute("innerText").ToString());
+        }
+
+        DateTime parseMovieReleaseDate()
+        {
+            IReadOnlyCollection<IWebElement> movieReleaseDateElement = FindElementsByDriver(By.CssSelector(YesPlanet_QueryStrings.movieReleaseDateElement));
+            string date = movieReleaseDateElement.ToList()[0].GetAttribute("innerText").ToString();
+            var dateTime = DateTime.Parse(date);
+            return dateTime;
+        }
+
+        /************************************* Parse Movies' screenings *************************************/
+
+        void parseScreenings(Movie movie)
+        {
+            IWebElement theaterFilterBoxElement;
+            IWebElement screeningTypeFilterBoxElement;
+            IWebElement allScreeningTypesButton;
+            IReadOnlyCollection<IWebElement> screeningsFilterElements;
+            IReadOnlyCollection<IWebElement> theaterFilterBoxListElements;
+            IReadOnlyCollection<IWebElement> daysFilterButtons;
+            IReadOnlyCollection<IWebElement> screeningTimeInfoContainer;
+            IReadOnlyCollection<IWebElement> screeningTimes;
+
+            var movieFromApi = _movieezApiUtils.GetMovie(movie.Name).Result;
+            List<Movieez.API.Model.Models.ShowTime> showTimesFromApi = null;
+            if (movieFromApi != null)
+            {
+                showTimesFromApi = _movieezApiUtils.GetShowTimesByMovieId(movieFromApi.ID).Result;
+            }
+
+            screeningsFilterElements = FindElementsByDriver(By.CssSelector(YesPlanet_QueryStrings.screeningsFilterElements), true);
+            theaterFilterBoxElement = FindElementByDriver(By.CssSelector(YesPlanet_QueryStrings.theaterFilterBoxElement));
+            screeningTypeFilterBoxElement = FindElementByDriver(By.CssSelector(YesPlanet_QueryStrings.screeningTypeFilterBoxElement));
+
+            int teaterCount = 1; // debug
+            try
+            {
+                Click(theaterFilterBoxElement, true, true); // Click on theater filter box
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("Failed to click on theaterFilterBoxElement");
+                return;
+            }
+            theaterFilterBoxListElements = getTheaterFilterBoxListElements();
+            int tCount = theaterFilterBoxListElements.Count;
+            for (int i=0; i< tCount; i++)
+            {
+                Console.WriteLine("Parsing new theater #" + (teaterCount++)); // Debug
+                try
+                {
+                    Click(theaterFilterBoxListElements.ToList()[i], true, true); // Filter by theater
+                }
+                catch (Exception)
+                {
+                    Console.WriteLine("Failed to click on theaterFilterBoxListElements");
+                }
+                try
+                {
+                    Click(screeningTypeFilterBoxElement, true, true); // Click on screening filter box
+                }
+                catch
+                {
+                    Console.WriteLine("Failed to click on screeningTypeFilterBoxElement");
+                    break;
+                }
+                allScreeningTypesButton = getAllScreeningTypesButton();
+                if (i==0)
+                {
+                    try
+                    {
+                        Click(allScreeningTypesButton, true, true); // Filter by all screening types 
+                    }
+                    catch
+                    {
+                        Console.WriteLine("Failed to click on allScreeningTypesButton");
+                        break;
+                    }
+                }
+                daysFilterButtons = getDaysFilterButtons();
+                int dayCount = 1; // debug
+                // Filter only today's screenings
+                if (daysFilterButtons == null)
+                    break;
+                IWebElement dayFilterButton = daysFilterButtons.ToList()[0];
+                try
+                {
+                    Click(dayFilterButton, true, true); // Filter by specific day
+                }
+                catch
+                {
+                    Console.WriteLine("Failed to click on dayFilterButton");
+                    break;
+                }
+                Console.WriteLine("Parsing new day #" + (dayCount++)); // Debug
+                if (isMoviePlaying(movie))
+                {
+                    Theater theater = parseTheaterFromScreenings();
+                    Screening screening = new Screening(movie, theater);
+
+                    screeningTimeInfoContainer = getScreeningContainer(); // Screening containers ordered by screening type
+                    foreach (IWebElement screeningTimeInfo in screeningTimeInfoContainer)
+                    {
+                        screening.Type = parseScreeningType(screeningTimeInfo);
+                        screening.Language = parseScreeningLanguage(screeningTimeInfo);
+                        screeningTimes = getScreeningTimesElements(screeningTimeInfo);
+                        foreach (IWebElement time in screeningTimes)
+                        {
+                            screening.Time = parseScreeningTime(time);
+                            ScreeningsList.Add(screening);
+                            if (movieFromApi != null)
+                            {
+                                var showTimeExists = showTimesFromApi.Any(st =>
+                                st.Day == screening.Time.ToString("dd/MM/yyyy") &&
+                                st.Time == screening.Time.ToString("hh:mm"));
+                                if (!showTimeExists)
+                                {
+                                    _movieezApiUtils.PostShowTime(screening, movieFromApi.ID);
+                                }
+                            }
+
+                            Console.WriteLine("Added new screening, time=" + screening.Time); // Debug
+                        }
+                    }
+                }
+                else
+                    Console.WriteLine("Movie screening is missing on this day");
+
+                try
+                {
+                    Click(theaterFilterBoxElement, true, true); // Click on theater filter box
+                }
+                catch
+                {
+                    Console.WriteLine("Failed to click on theaterFilterBoxElement");
+                    return;
+                }
+                theaterFilterBoxListElements = getTheaterFilterBoxListElements();
+            }
+            Console.WriteLine("Total screenings in list: " + ScreeningsList.Count);
+        }
+
+        // returns true if movie is playing in current selected day, theater and type
+        bool isMoviePlaying(Movie movie)
+        {
+            if (FindElementByDriver(By.CssSelector(YesPlanet_QueryStrings.isMoviePlaying)) != null)
+                return true;
+            if ((movie.ReleaseDate - DateTime.Now).Days > 0)
+            {
+                Console.WriteLine("Movie is not released yet. Showtimes are missing");
+                return true;
+            }
+            return false;
+        }
+
+        // Find and returns screening days filter buttons from movie's page
+        IReadOnlyCollection<IWebElement> getDaysFilterButtons()
+        {
+            return FindElementsByDriver(By.CssSelector(YesPlanet_QueryStrings.daysFilterButtons));
+        }
+
+        // Find and returns all screening type filter button from movie's page
+        IWebElement getAllScreeningTypesButton()
+        {
+            IReadOnlyCollection<IWebElement> screeningTypeFilterBoxListElements = FindElementsByDriver(By.CssSelector(YesPlanet_QueryStrings.screeningTypeFilterBoxListElements), true);
+            if (screeningTypeFilterBoxListElements != null)
+                return screeningTypeFilterBoxListElements.ToList()[0];
+            return null;
+        }
+
+        IReadOnlyCollection<IWebElement> getScreeningContainer()
+        {
+            IReadOnlyCollection<IWebElement> screeningsContainer = FindElementsByDriver(By.CssSelector(YesPlanet_QueryStrings.screeningsContainer));
+            return screeningsContainer;
+        }
+
+        Theater parseTheaterFromScreenings()
+        {
+            Theater theater = new Theater();
+            theater.Name = FindElementByDriver(By.ClassName(YesPlanet_QueryStrings.theaterName)).GetAttribute("innerText");
+            theater.Address = FindElementByDriver(By.CssSelector(YesPlanet_QueryStrings.theaterAddress)).GetAttribute("innerText");
+            return theater;
+        }
+
+        string parseScreeningType(IWebElement screeningInfo)
+        {
+            string type = "";
+            IReadOnlyCollection<IWebElement> screeningTypeElements = FindElementsByFather(By.CssSelector(YesPlanet_QueryStrings.screeningTypeElements), screeningInfo);
+            foreach (IWebElement screeningType in screeningTypeElements)
+            {
+                string tmp = screeningType.GetAttribute("innerText");
+                if (!type.Contains(tmp))
+                    type += $"{tmp} ";
+            }
+            return type;
+        }
+
+        public string parseScreeningLanguage(IWebElement screeningInfo)
+        {
+            string lang = "";
+            IReadOnlyCollection<IWebElement> langElements = FindElementsByFather(By.CssSelector(YesPlanet_QueryStrings.langElements), screeningInfo);
+            foreach (IWebElement langElement in langElements)
+            {
+                string tmp = langElement.GetAttribute("innerText");
+                if (!lang.Contains(tmp))
+                    lang += $"{tmp} ";
+            }
+            return lang;
+        }
+
+        DateTime parseScreeningTime(IWebElement screeningTimeInfo)
+        {
+
+            return DateTime.Parse(getDayDate() + " " + screeningTimeInfo.GetAttribute("innerText"));
+        }
+
+        IReadOnlyCollection<IWebElement> getTheaterFilterBoxListElements()
+        {
+            return FindElementsByDriver(By.CssSelector(YesPlanet_QueryStrings.theaterFilterBoxListElements));
+        }
+
+        IReadOnlyCollection<IWebElement> getScreeningTimesElements(IWebElement screeningContainer)
+        {
+            return FindElementsByFather(By.CssSelector(YesPlanet_QueryStrings.screeningTimesElements), screeningContainer);
+        }
+
+        public void closeCookiesPopUp()
+        {
+            IWebElement closeButton = FindElementByDriver(By.ClassName("close_btn_thick"));
+            try { Click(closeButton, false, false); }
+            catch (Exception) { }
+        }
+
+        public string getDayDate()
+        {
+            Regex re = new Regex(@"[0-9]{1,2}(\/|-)[0-9]{1,2}(\/|-)[0-9]{4}");
+            IWebElement el = FindElementByDriver(By.CssSelector(YesPlanet_QueryStrings.screeningDate));
+            return re.Match(el.GetAttribute("innerText")).ToString();
+        }
+    }
+}
