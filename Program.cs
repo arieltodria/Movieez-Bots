@@ -11,14 +11,16 @@ namespace Movieez
         public static string ResourcesPath = Path.GetFullPath(Path.Combine(Directory.GetParent(Directory.GetCurrentDirectory()).Parent.FullName, "..\\Resources"));
         static void Main(string[] args)
         {
-            initConfig();
-            Console.WriteLine("Hello World!");
+            init();
             BotsManager bots = new BotsManager();
-            bots.LaunchHotCinemaBot();
-            //bots.LaunchCinemaCityBot();
-            //bots.LaunchYesPlanetBot();
 
             //MyScheduler.IntervalInHours(9, 44, 1, bots.LaunchYesPlanetBot());
+        }
+
+        static void init()
+        {
+            initLogger();
+            initConfig();
         }
 
         static void initConfig()
@@ -26,6 +28,11 @@ namespace Movieez
             CultureInfo ci = new CultureInfo("he-IL");
             Thread.CurrentThread.CurrentCulture = ci;
             Thread.CurrentThread.CurrentUICulture = ci;
+        }
+
+        static void initLogger()
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(AppDomain.CurrentDomain.BaseDirectory + $"movieezLogs"));
         }
     }
 }

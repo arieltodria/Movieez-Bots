@@ -15,6 +15,8 @@ namespace Movieez.Bots
         public string ApiUrl { get; set; } = "http://localhost:5000/";
         private readonly HttpClient _client;
         private readonly e_Theaters _theater;
+        // Logger
+        public static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
         public MovieezApiUtils(e_Theaters theater)
         {
@@ -35,12 +37,13 @@ namespace Movieez.Bots
 
             if (postMovieResponse.IsSuccessStatusCode)
             {
-                Console.WriteLine("Request Message Information:- \n\n" + postMovieResponse.RequestMessage + "\n");
-                Console.WriteLine("Response Message Header \n\n" + postMovieResponse.Content.Headers + "\n");
+                logger.Debug($"New Movie is posted to API");
+                logger.Debug("Request Message Information:- \n\n" + postMovieResponse.RequestMessage + "\n");
+                logger.Debug("Response Message Header \n\n" + postMovieResponse.Content.Headers + "\n");
             }
             else
             {
-                Console.WriteLine("{0} ({1})", (int)postMovieResponse.StatusCode, postMovieResponse.ReasonPhrase);
+                logger.Error("{0} ({1})", (int)postMovieResponse.StatusCode, postMovieResponse.ReasonPhrase);
             }
         }
 
@@ -53,12 +56,13 @@ namespace Movieez.Bots
             HttpResponseMessage postMovieResponse = _client.PostAsync("api/ShowTimes", content).Result;
             if (postMovieResponse.IsSuccessStatusCode)
             {
-                Console.WriteLine("Request Message Information:- \n\n" + postMovieResponse.RequestMessage + "\n");
-                Console.WriteLine("Response Message Header \n\n" + postMovieResponse.Content.Headers + "\n");
+                logger.Debug($"New Showtime is posted to API");
+                //Console.WriteLine("Request Message Information:- \n\n" + postMovieResponse.RequestMessage + "\n");
+                //Console.WriteLine("Response Message Header \n\n" + postMovieResponse.Content.Headers + "\n");
             }
             else
             {
-                Console.WriteLine("{0} ({1})", (int)postMovieResponse.StatusCode, postMovieResponse.ReasonPhrase);
+                logger.Error("{0} ({1})", (int)postMovieResponse.StatusCode, postMovieResponse.ReasonPhrase);
             }
         }
 

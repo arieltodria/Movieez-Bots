@@ -23,6 +23,8 @@ namespace Movieez.ExternalRatings
         public string[] DBFileNames = { "title.basics.tsv.gz", "title.ratings.tsv.gz" };
         int minMovieYear = 2020;
         List<Objects.Rating> RatingsList;
+        // Logger
+        public static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
         public RatingsManager(bool runOnStart = true)
         {
@@ -50,9 +52,9 @@ namespace Movieez.ExternalRatings
                 {
                     string fileUri = DBUrl + file.Key;
                     webClient.DownloadFile(fileUri, file.Value);
-                    Console.WriteLine($"Donwloading file {fileUri}");
+                    logger.Info($"Donwloading file {fileUri}");
                 }
-                Console.WriteLine($"File {file.Value} already exists");
+                logger.Info($"File {file.Value} already exists");
             }
             UnzipFiles();
         }
@@ -67,7 +69,7 @@ namespace Movieez.ExternalRatings
                 if (File.Exists(deCompressedFilePath))
                 {
                     File.Delete(deCompressedFilePath);
-                    Console.WriteLine($"File {deCompressedFilePath} already exists. Deleting file... ");
+                    logger.Info($"File {deCompressedFilePath} already exists. Deleting file... ");
                 }
                 DeCompressFile(file.Value, file.Value.Remove(file.Value.LastIndexOf('.')));
                 DBDecompressedFiles.Add(deCompressedFileName, deCompressedFilePath);
@@ -200,7 +202,7 @@ namespace Movieez.ExternalRatings
             foreach (DataRow dr in dt)
             {
                 foreach (string s in dr.ItemArray)
-                    Console.Write(s + "\t");
+                    Console.WriteLine(s + "\t");
                 Console.WriteLine();
             }
         }

@@ -15,7 +15,7 @@ using Movieez.Resources;
 
 namespace Movieez
 {
-    class YesPlanet : Bot
+    class YesPlanetBot : Bot
     {
         int i = 1;
         string Name = "YesPlanet";
@@ -26,8 +26,10 @@ namespace Movieez
         public List<Movie> MoviesList;
         public List<Theater> TheatersList;
         public List<Screening> ScreeningsList;
+        // Logger
+        public static new NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
-        public YesPlanet()
+        public YesPlanetBot()
         {
             initDriver(MainUrl);
             MoviesList = new List<Movie>();
@@ -38,22 +40,22 @@ namespace Movieez
 
         public void run()
         {
+            logger.Debug("Running Yes Planet bot");
             this.parseAllMovies();
             printResults();
+            closeBrowser();
         }
 
         // Print lists of all parsed movies and showtimes
         public void printResults()
         {
-            Console.WriteLine("####################################################");
-            Console.WriteLine("Total movies: " + MoviesList.Count);
-            Console.WriteLine("Total screenings: " + ScreeningsList.Count);
-            Console.WriteLine("####################################################");
+            logger.Info($"Total results: movies={MoviesList.Count} screenings={ScreeningsList.Count}");
         }
 
         // Load all movies in YesPlanet main page
         public void loadAllMovies()
         {
+            logger.Debug("Loading all movies in Yes Planet main page");
             int i = 0;
             wait();
             scrollToLoadAllElements();
@@ -61,22 +63,22 @@ namespace Movieez
             while(isLoadMoreMoviesButtonVisible())
             {
                 wait();
-                Console.WriteLine("loadAllMovies(): loadMoreMoviesButton is visible" + (i++));
                 try
                 {
                     Click(loadMoreMoviesButton, false, false);
                 }
                 catch (Exception)
                 {
-                    Console.WriteLine("Failed to click on loadMoreMoviesButton");
+                    logger.Error("Failed to click on loadMoreMoviesButton");
                 }
             }
-            Console.WriteLine("loadAllMovies()> finished loading all movies");
+            logger.Debug("Loaded all movies in Yes Planet main page");
         }
 
         // returns true if load more movies button is enabled
         public bool isLoadMoreMoviesButtonVisible()
         {
+            logger.Debug("Checking if LoadMoreMoviesButton is visible");
             IReadOnlyCollection<IWebElement> loadMoreMovieBottons = FindElementsByDriver(By.CssSelector(YesPlanet_QueryStrings.loadMoreMoviesButton), true);
             return (loadMoreMovieBottons.Count == 2);
         }
@@ -84,6 +86,7 @@ namespace Movieez
         // finds and returns load more movies button
         IWebElement getLoadMoreMoviesButton()
         {
+            logger.Debug("Getting LoadMoreMoviesButton");
             IReadOnlyCollection<IWebElement> loadMoreMoviesButton = FindElementsByDriver(By.CssSelector(YesPlanet_QueryStrings.loadMoreMoviesButton), true);
             return loadMoreMoviesButton.ToList()[0];
         }
@@ -91,6 +94,7 @@ namespace Movieez
         // Find all movie poster elements in YesPlanet home page
         void initMoviesElementsLists(bool sort = false, bool loadAllMovies = true)
         {
+            logger.Debug("Initializing all movies elements from YesPlanet home page");
             allMoviesElements = null;
             if (loadAllMovies)
                 this.loadAllMovies();
@@ -100,11 +104,13 @@ namespace Movieez
         // Parses all movies in YesPlanet home page
         void parseAllMovies()
         {
+            logger.Debug("Parsing all movies");
             int totalMovies;
             List<string> moviesUrls = new List<string>();
 
             initMoviesElementsLists();
             totalMovies = allMoviesElements.Count;
+            logger.Debug($"Total movies to parse: {totalMovies}");
             for (int counter=0; counter < totalMovies; counter++)
             {
                 Movie movie = new Movie();
@@ -118,9 +124,10 @@ namespace Movieez
         // Receives movie element of poster link. Goes to movie url and exctracts metadata.
         void parseMovieMetadata(IWebElement movieElement, Movie movie)
         {
+            logger.Info("Parsing movie's metadata");
             goToUrl(movie.Urls[Name]);
             closeCookiesPopUp();
-            movie.Name = parseMovieName();
+            movie.Name = fixMovieName(parseMovieName());
             movie.EnglishName = parseEnglishNameFromMovieUrl(movie.Urls[Name]);
             movie.Duration = parseMovieDuraion();
             movie.ReleaseDate = parseMovieReleaseDate();
@@ -137,7 +144,6 @@ namespace Movieez
             int director_index = 3;
             int rating_index = 6;
             movie.EnglishName = innerMetadataContainer.ToList()[english_name_index].GetAttribute("innerText");
-            Console.WriteLine(movie.EnglishName); // Debug
             movie.Genre = innerMetadataContainer.ToList()[genre_index].GetAttribute("innerText");
             movie.Cast = innerMetadataContainer.ToList()[cast_index].GetAttribute("innerText");
             movie.Director = innerMetadataContainer.ToList()[director_index].GetAttribute("innerText");
@@ -148,7 +154,7 @@ namespace Movieez
             MoviesList.Add(movie);
             _movieezApiUtils.PostMovie(movie);
             parseScreenings(movie);
-            Console.WriteLine(MoviesList.Count + "/" + (i++));
+            //Console.WriteLine(MoviesList.Count + "/" + (i++));
             goToUrl(MainUrl);
             closeCookiesPopUp();
         }
@@ -156,6 +162,7 @@ namespace Movieez
         /************************************* Parse Movies' metadata helpers *************************************/
         string parseMovieName()
         {
+            logger.Debug("Parsing movie's name");
             IWebElement movieNameElement = FindElementByDriver(By.CssSelector(YesPlanet_QueryStrings.movieNameElement));
             if (movieNameElement != null)
                 return movieNameElement.GetAttribute("innerText");
@@ -164,6 +171,7 @@ namespace Movieez
 
         string parseMoviePlot()
         {
+            logger.Debug("Parsing movie's plot");
             IWebElement moviePlotElement = FindElementByDriver(By.ClassName(YesPlanet_QueryStrings.moviePlotElement));
             if (moviePlotElement != null)
                 return moviePlotElement.GetAttribute("innerText");
@@ -172,6 +180,7 @@ namespace Movieez
 
         string parseMovieTrailerUrl()
         {
+            logger.Debug("Parsing movie's trailer url");
             IWebElement movieTrailerElement = FindElementByDriver(By.CssSelector(YesPlanet_QueryStrings.movieTrailerElement));
             if (movieTrailerElement != null)
                 return movieTrailerElement.GetAttribute("href");
@@ -179,31 +188,35 @@ namespace Movieez
         }
         string parseMovieUrl(IWebElement movieElement)
         {
+            logger.Debug("Parsing movie's url");
             string movieUrl = movieElement.GetAttribute("href");
             return movieUrl;
         }
 
         string parseEnglishNameFromMovieUrl(string url)
         {
+            logger.Debug("Parsing movie's english name");
             Regex re = new Regex(@".*\/(.*)\/.*");
             Match m = re.Match(url);
             if (m.Success)
                 return m.Value;
             else
             {
-                Console.WriteLine("Failef to parse url string: " + driver.Url);
+                logger.Error("Failed to parse url string: " + driver.Url);
                 return "";
             }
         }
 
         string parseMovieDuraion()
         {
+            logger.Debug("Parsing movie's duration");
             IReadOnlyCollection<IWebElement> movieDurationElement = FindElementsByDriver(By.CssSelector(YesPlanet_QueryStrings.movieDurationElement));
             return parseMovieDuration(movieDurationElement.ToList()[1].GetAttribute("innerText").ToString());
         }
 
         DateTime parseMovieReleaseDate()
         {
+            logger.Debug("Parsing movie's release date");
             IReadOnlyCollection<IWebElement> movieReleaseDateElement = FindElementsByDriver(By.CssSelector(YesPlanet_QueryStrings.movieReleaseDateElement));
             string date = movieReleaseDateElement.ToList()[0].GetAttribute("innerText").ToString();
             var dateTime = DateTime.Parse(date);
@@ -214,6 +227,7 @@ namespace Movieez
 
         void parseScreenings(Movie movie)
         {
+            logger.Info($"Parsing movie's {movie.EnglishName} screenings");
             IWebElement theaterFilterBoxElement;
             IWebElement screeningTypeFilterBoxElement;
             IWebElement allScreeningTypesButton;
@@ -241,21 +255,21 @@ namespace Movieez
             }
             catch (Exception)
             {
-                Console.WriteLine("Failed to click on theaterFilterBoxElement");
+                logger.Error("Failed to click on theaterFilterBoxElement");
                 return;
             }
             theaterFilterBoxListElements = getTheaterFilterBoxListElements();
             int tCount = theaterFilterBoxListElements.Count;
             for (int i=0; i< tCount; i++)
             {
-                Console.WriteLine("Parsing new theater #" + (teaterCount++)); // Debug
+                logger.Debug($"Parsing new theater #{teaterCount++}");
                 try
                 {
                     Click(theaterFilterBoxListElements.ToList()[i], true, true); // Filter by theater
                 }
                 catch (Exception)
                 {
-                    Console.WriteLine("Failed to click on theaterFilterBoxListElements");
+                    logger.Error("Failed to click on theaterFilterBoxListElements");
                 }
                 try
                 {
@@ -263,7 +277,7 @@ namespace Movieez
                 }
                 catch
                 {
-                    Console.WriteLine("Failed to click on screeningTypeFilterBoxElement");
+                    logger.Error("Failed to click on screeningTypeFilterBoxElement");
                     break;
                 }
                 allScreeningTypesButton = getAllScreeningTypesButton();
@@ -275,7 +289,7 @@ namespace Movieez
                     }
                     catch
                     {
-                        Console.WriteLine("Failed to click on allScreeningTypesButton");
+                        logger.Error("Failed to click on allScreeningTypesButton");
                         break;
                     }
                 }
@@ -291,10 +305,10 @@ namespace Movieez
                 }
                 catch
                 {
-                    Console.WriteLine("Failed to click on dayFilterButton");
+                    logger.Error("Failed to click on dayFilterButton");
                     break;
                 }
-                Console.WriteLine("Parsing new day #" + (dayCount++)); // Debug
+                logger.Debug("Parsing new day #" + (dayCount++)); // Debug
                 if (isMoviePlaying(movie))
                 {
                     Theater theater = parseTheaterFromScreenings();
@@ -321,12 +335,12 @@ namespace Movieez
                                 }
                             }
 
-                            Console.WriteLine("Added new screening, time=" + screening.Time); // Debug
+                            logger.Debug("Added new screening, time=" + screening.Time); // Debug
                         }
                     }
                 }
                 else
-                    Console.WriteLine("Movie screening is missing on this day");
+                    logger.Error("Movie screening is missing on this day");
 
                 try
                 {
@@ -334,12 +348,12 @@ namespace Movieez
                 }
                 catch
                 {
-                    Console.WriteLine("Failed to click on theaterFilterBoxElement");
+                    logger.Error("Failed to click on theaterFilterBoxElement");
                     return;
                 }
                 theaterFilterBoxListElements = getTheaterFilterBoxListElements();
             }
-            Console.WriteLine("Total screenings in list: " + ScreeningsList.Count);
+            logger.Debug("Total screenings in list: " + ScreeningsList.Count);
         }
 
         // returns true if movie is playing in current selected day, theater and type
@@ -349,7 +363,7 @@ namespace Movieez
                 return true;
             if ((movie.ReleaseDate - DateTime.Now).Days > 0)
             {
-                Console.WriteLine("Movie is not released yet. Showtimes are missing");
+                logger.Debug("Movie is not released yet. Showtimes are missing");
                 return true;
             }
             return false;
@@ -358,12 +372,14 @@ namespace Movieez
         // Find and returns screening days filter buttons from movie's page
         IReadOnlyCollection<IWebElement> getDaysFilterButtons()
         {
+            logger.Debug("Gettings daysFilterButtons");
             return FindElementsByDriver(By.CssSelector(YesPlanet_QueryStrings.daysFilterButtons));
         }
 
         // Find and returns all screening type filter button from movie's page
         IWebElement getAllScreeningTypesButton()
         {
+            logger.Debug("Gettings allScreeningTypesButton");
             IReadOnlyCollection<IWebElement> screeningTypeFilterBoxListElements = FindElementsByDriver(By.CssSelector(YesPlanet_QueryStrings.screeningTypeFilterBoxListElements), true);
             if (screeningTypeFilterBoxListElements != null)
                 return screeningTypeFilterBoxListElements.ToList()[0];
@@ -372,12 +388,14 @@ namespace Movieez
 
         IReadOnlyCollection<IWebElement> getScreeningContainer()
         {
+            logger.Debug("Gettings screeningsContainer");
             IReadOnlyCollection<IWebElement> screeningsContainer = FindElementsByDriver(By.CssSelector(YesPlanet_QueryStrings.screeningsContainer));
             return screeningsContainer;
         }
 
         Theater parseTheaterFromScreenings()
         {
+            logger.Debug("Parsing theater from screenings");
             Theater theater = new Theater();
             theater.Name = FindElementByDriver(By.ClassName(YesPlanet_QueryStrings.theaterName)).GetAttribute("innerText");
             theater.Address = FindElementByDriver(By.CssSelector(YesPlanet_QueryStrings.theaterAddress)).GetAttribute("innerText");
@@ -386,6 +404,7 @@ namespace Movieez
 
         string parseScreeningType(IWebElement screeningInfo)
         {
+            logger.Debug("Parsing screening type");
             string type = "";
             IReadOnlyCollection<IWebElement> screeningTypeElements = FindElementsByFather(By.CssSelector(YesPlanet_QueryStrings.screeningTypeElements), screeningInfo);
             foreach (IWebElement screeningType in screeningTypeElements)
@@ -399,6 +418,7 @@ namespace Movieez
 
         public string parseScreeningLanguage(IWebElement screeningInfo)
         {
+            logger.Debug("Parsing screening language");
             string lang = "";
             IReadOnlyCollection<IWebElement> langElements = FindElementsByFather(By.CssSelector(YesPlanet_QueryStrings.langElements), screeningInfo);
             foreach (IWebElement langElement in langElements)
@@ -412,22 +432,25 @@ namespace Movieez
 
         DateTime parseScreeningTime(IWebElement screeningTimeInfo)
         {
-
+            logger.Debug("Parsing screening time");
             return DateTime.Parse(getDayDate() + " " + screeningTimeInfo.GetAttribute("innerText"));
         }
 
         IReadOnlyCollection<IWebElement> getTheaterFilterBoxListElements()
         {
+            logger.Debug("Getting theaterFilterBoxListElements");
             return FindElementsByDriver(By.CssSelector(YesPlanet_QueryStrings.theaterFilterBoxListElements));
         }
 
         IReadOnlyCollection<IWebElement> getScreeningTimesElements(IWebElement screeningContainer)
         {
+            logger.Debug("Getting screeningTimesElements");
             return FindElementsByFather(By.CssSelector(YesPlanet_QueryStrings.screeningTimesElements), screeningContainer);
         }
 
         public void closeCookiesPopUp()
         {
+            logger.Debug("Closing cookies popup");
             IWebElement closeButton = FindElementByDriver(By.ClassName("close_btn_thick"));
             try { Click(closeButton, false, false); }
             catch (Exception) { }

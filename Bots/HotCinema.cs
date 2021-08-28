@@ -14,6 +14,8 @@ namespace Movieez
         public List<Theater> TheatersList;
         public List<Screening> ScreeningsList;
         public List<string> moviesUrlList;
+        // Logger
+        public static new NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
         public HotCinema()
         {
             initDriver(MainUrl);
@@ -29,6 +31,13 @@ namespace Movieez
             this.parseTheaters();
             this.ParseAllMovies();
             this.ParseScreening();
+            this.printResults();
+            this.closeBrowser();
+        }
+
+        public void printResults()
+        {
+            logger.Info($"Total results: movies={MoviesList.Count} screenings={ScreeningsList.Count}");
         }
 
         void ParseAllMovies()
@@ -46,7 +55,8 @@ namespace Movieez
                     }
                     catch (Exception)
                     {
-                        Console.WriteLine("Failed to parse a single movie");
+                        logger.Error("Failed to parse a single movie");
+                        saveDebugData();
                     }
                 }
                 for (int i = 0; i < MoviesList.Count; i++)
@@ -57,7 +67,8 @@ namespace Movieez
             }
             catch (Exception)
             {
-                Console.WriteLine("Failed to parse Movies");
+                logger.Info("Failed to parse Movies");
+                saveDebugData();
             }
         }
 
@@ -86,14 +97,16 @@ namespace Movieez
                         }
                         catch (Exception)
                         {
-                            Console.WriteLine("Failed to parse a single screening");
+                            logger.Error("Failed to parse a single screening");
+                            saveDebugData();
                         }
                     }
                 }
             }
             catch (Exception)
             {
-                Console.WriteLine("Failed to parse all screening");
+                logger.Error("Failed to parse all screening");
+                saveDebugData();
             }
         }
 
@@ -246,14 +259,15 @@ namespace Movieez
                     }
                     catch (Exception)
                     {
-                        Console.WriteLine("Failed to parse a single Theater");
+                        logger.Error("Failed to parse a single Theater");
+                        saveDebugData();
                     }
                 }
             }
             catch (Exception)
             {
-
-                Console.WriteLine("Failed to parse Theaters");
+                logger.Error("Failed to parse Theaters");
+                saveDebugData();
             }
             goToUrl(MainUrl);
         }

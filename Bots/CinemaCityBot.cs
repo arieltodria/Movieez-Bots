@@ -32,18 +32,19 @@ namespace Movieez
 
         public CinemaCityBot()
         {
+
             initDriver(MainUrl);
             MoviesList = new List<Movie>();
             TheatersList = new List<Theater>();
             ScreeningsList = new List<Screening>();
             _movieezApiUtils = new MovieezApiUtils(MovieezApiUtils.e_Theaters.CinemaCity);
-
         }
 
         public void run()
         {
             this.parseAllMovies();
             printResults();
+            closeBrowser();
         }
 
         public void parseAllMovies()
@@ -55,8 +56,8 @@ namespace Movieez
             {
                 initMoviesElements();
                 Movie movie = parseMovie(movies.ToList()[i]);
-                MoviesList.Add(movie);
-                _movieezApiUtils.PostMovie(movie);
+                MoviesList.Add(movie); // Add parsed movies to movies list
+                _movieezApiUtils.PostMovie(movie); // Post movie to movieez API
                 this.loadAllMovies();
             }
         }
@@ -72,7 +73,7 @@ namespace Movieez
 
             parseMoviePage(movie, movieElement);
             parseMovieMetadata(movie);
-            Console.WriteLine("Parsed " + movie.EnglishName);
+            //Bot.logger.Debug("Parsed " + movie.EnglishName);
             parseMovieScreenings(movie);
 
             return movie;
@@ -90,12 +91,10 @@ namespace Movieez
             IWebElement time_search_box_list = initTimeSearchBoxList();
 
             IReadOnlyCollection<IWebElement> theather_names = initTheatersNames();
-            IReadOnlyCollection<IWebElement> screeningDays;
             IReadOnlyCollection<IWebElement> screeningTimes;
             IWebElement date;
-            int tCount = 1; // debug
-            int theatersCount = theather_names.Count;
 
+            int theatersCount = theather_names.Count;
             var movieFromApi = _movieezApiUtils.GetMovie(movie.Name).Result;
             List<Movieez.API.Model.Models.ShowTime> showTimesFromApi = null;
             if (movieFromApi != null)
@@ -115,7 +114,7 @@ namespace Movieez
                 }
                 catch (Exception)
                 {
-                    Console.WriteLine("Failed to click on theater");
+                    logger.Error("Failed to click on theater");
                 }
                 // Running only on 1st day's screenings
                 closeChatPopUp();
@@ -127,7 +126,7 @@ namespace Movieez
                 }
                 catch (Exception)
                 {
-                    Console.WriteLine("Failed to click on date");
+                    logger.Error("Failed to click on date");
                 }
 
                 screeningTimes = initScreeningTimes();
@@ -152,7 +151,7 @@ namespace Movieez
                     }
                     catch (Exception)
                     {
-                        Console.WriteLine("Failed to click on time");
+                        logger.Error("Failed to click on time");
                     }
                 }
                 theather_names = initTheatersNames();
@@ -223,7 +222,7 @@ namespace Movieez
             screening.Theater = new Theater(theater.GetAttribute("innerText"), "");
             screening.Time = DateTime.Parse(date.GetAttribute("innerText") + " " + time.GetAttribute("innerText"));
             screening.Type = "2D";
-            Console.WriteLine("New screening added " + screening.Time);
+            logger.Debug("New screening added " + screening.Time);
             return screening;
         }
 
@@ -284,9 +283,9 @@ namespace Movieez
             parseMovieName(movie);
         }
 
+        // remove "תאריך בכורה" from string
         DateTime parseMovieReleaseDate(string date)
         {
-            // remove "תאריך בכורה" from string
             date = date.Remove(0, "תאריך בכורה".Length);
             return DateTime.Parse(date);
         }
@@ -297,29 +296,36 @@ namespace Movieez
             if (tmpName.Contains('/'))
             {
                 movie.EnglishName = tmpName.Substring(tmpName.IndexOf('/') + 1);
-                movie.Name = tmpName.Substring(0, tmpName.IndexOf('/'));
+                movie.Name = fixMovieName(tmpName.Substring(0, tmpName.IndexOf('/')));
             }
             else
-                movie.Name = tmpName;
+                movie.Name = fixMovieName(tmpName);
         }
 
         void loadAllMovies()
         {
-            /** int n = 1;
-            while (loadMoreMovies(n)) {
-                n++;
-            }
-            Console.WriteLine("Finished loading all movies"); **/
             IWebElement load_button = this.driver.FindElement(By.ClassName("loadmoreposts"));
-            Click(load_button);            
-            Click(load_button);
-            Click(load_button);
-            Click(load_button);
-            Click(load_button);
-            Click(load_button);
-            Click(load_button);
+            while(!isLoadingOver())
+            {
+                Click(load_button, true, false);
+            }
         }
 
+        /* returns true if all movies loaded in cinema city's main page */
+        bool isLoadingOver()
+        {
+            IReadOnlyCollection<IWebElement> loadedMovies = FindElementsByDriver(By.CssSelector("div[id^='movie-wrapper']"));
+            if (loadedMovies != null)
+            {
+                IWebElement lastMovie = loadedMovies.Reverse().ToList()[0];
+                if (FindElementsByFather(By.CssSelector("div"), lastMovie) != null)
+                    return false;
+                return true;
+            }
+            return false;
+        }
+
+        /* Close the chat bot popup*/
         void closeChatPopUp()
         {
             if (FindElementsByDriver(By.CssSelector(CinemaCity_QueryStrings.openBotButton)) != null)
@@ -345,10 +351,7 @@ namespace Movieez
 
         public void printResults()
         {
-            Console.WriteLine("####################################################");
-            Console.WriteLine("Total movies: " + MoviesList.Count);
-            Console.WriteLine("Total screenings: " + ScreeningsList.Count);
-            Console.WriteLine("####################################################");
+            logger.Info($"Total results: movies={MoviesList.Count} screenings={ScreeningsList.Count}");
         }
     }
 }
