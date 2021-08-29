@@ -42,22 +42,21 @@ namespace Movieez
 
         public void run()
         {
-            this.parseAllMovies();
+            parseAllMovies();
             printResults();
             closeBrowser();
         }
 
         public void parseAllMovies()
         {
-            this.loadAllMovies();
+            loadAllMovies();
             initMoviesElements();
             int totalMoviesToParse = movies.Count;
             for(int i = 0; i < totalMoviesToParse; i++)
             {
                 initMoviesElements();
                 Movie movie = parseMovie(movies.ToList()[i]);
-                MoviesList.Add(movie); // Add parsed movies to movies list
-                _movieezApiUtils.PostMovie(movie); // Post movie to movieez API
+                logger.Debug(movie.ToString());
                 this.loadAllMovies();
             }
         }
@@ -73,7 +72,6 @@ namespace Movieez
 
             parseMoviePage(movie, movieElement);
             parseMovieMetadata(movie);
-            //Bot.logger.Debug("Parsed " + movie.EnglishName);
             parseMovieScreenings(movie);
 
             return movie;
@@ -219,16 +217,24 @@ namespace Movieez
         {
             Screening screening = new Screening();
             screening.Movie = movie;
-            screening.Theater = new Theater(theater.GetAttribute("innerText"), "");
+            screening.Theater = new Theater(parseScreeningLocation(theater.GetAttribute("innerText")), "");
             screening.Time = DateTime.Parse(date.GetAttribute("innerText") + " " + time.GetAttribute("innerText"));
-            screening.Type = "2D";
+            screening.Type = parseScreeningType(theater.GetAttribute("innerText"));
             logger.Debug("New screening added " + screening.Time);
             return screening;
         }
 
-        string parseScreeningType(string type)
+        string parseScreeningType(string location)
         {
-            return Regex.Replace(type, @"(\w?)\ (\d?)", "").ToString();
+            var result = Regex.Matches(location, @"\((.*)\)");
+            if (result.Count != 0)
+                return result[0].Groups[1].ToString();
+            return "2D";
+        }
+
+        string parseScreeningLocation(string location)
+        {
+            return Regex.Replace(location, @"\((.*)\)", "");
         }
 
         /**void parseTheaters()
@@ -281,6 +287,10 @@ namespace Movieez
             movie.TrailerUrl = FindElementByDriver(By.Id("fullpagevideo")).GetAttribute("src");
             movie.MainImage = FindElementByDriver(By.CssSelector(CinemaCity_QueryStrings.MainImage)).GetAttribute("src");
             parseMovieName(movie);
+
+            // Movie obj is ready
+            MoviesList.Add(movie); // Add parsed movies to movies list
+            _movieezApiUtils.PostMovie(movie); // Post movie to movieez API
         }
 
         // remove "תאריך בכורה" from string

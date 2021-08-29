@@ -28,7 +28,7 @@ namespace Movieez
         }
         public override string ToString()
         {
-            return $"Name={Name} EnglishName={EnglishName} \nPlot={Plot} \nTrailer_link={TrailerUrl} \nDuration={Duration} Genre={Genre} Rating={Rating}";
+            return $"Name={Name} EnglishName={EnglishName} Plot={Plot} Trailer_link={TrailerUrl} Duration={Duration} Genre={Genre} Rating={Rating} Cast={Cast} Director={Director} PosterImage={PosterImage} MainImage={MainImage} ReleaseDate={ReleaseDate}";
         }
     }
 }

@@ -153,6 +153,7 @@ namespace Movieez
 
             MoviesList.Add(movie);
             _movieezApiUtils.PostMovie(movie);
+            logger.Debug(movie.ToString());
             parseScreenings(movie);
             //Console.WriteLine(MoviesList.Count + "/" + (i++));
             goToUrl(MainUrl);

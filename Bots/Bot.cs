@@ -35,7 +35,7 @@ namespace Movieez
         // Waits default time
         public void wait(int time = GlobalVars.DEFAULT_WAIT_TIME)
         {
-            logger.Debug($"Waiting {time} seconds..");
+            //logger.Debug($"Waiting {time} seconds..");
             driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(GlobalVars.DEFAULT_WAIT_TIME);
         }
 

@@ -37,9 +37,9 @@ namespace Movieez.Bots
 
             if (postMovieResponse.IsSuccessStatusCode)
             {
-                logger.Debug($"New Movie is posted to API");
-                logger.Debug("Request Message Information:- \n\n" + postMovieResponse.RequestMessage + "\n");
-                logger.Debug("Response Message Header \n\n" + postMovieResponse.Content.Headers + "\n");
+                logger.Debug($"New Movie is posted successfully to API");
+                //logger.Debug("Request Message Information:- \n\n" + postMovieResponse.RequestMessage + "\n");
+                //logger.Debug("Response Message Header \n\n" + postMovieResponse.Content.Headers + "\n");
             }
             else
             {
@@ -106,9 +106,12 @@ namespace Movieez.Bots
                 Director = movie.Director,
                 Rating = movie.Rating.ToString(),
                 PosterImage = movie.PosterImage,
-                MainImage = movie.PosterImage,
+                MainImage = movie.MainImage,
                 TrailerUrl = movie.TrailerUrl,
-                IsActive = true
+                ReleaseDate = movie.ReleaseDate.ToString(),
+                IsActive = DateTime.Now > movie.ReleaseDate,
+                CreatedDate = DateTime.Now.ToString(),
+                UpdatedDate = DateTime.Now.ToString()
             };
         }
 
@@ -123,7 +126,8 @@ namespace Movieez.Bots
                 Day = showTime.Time.ToString("dd/MM/yyyy"),
                 Time = showTime.Time.ToString("hh:mm"),
                 Type = showTime.Type,
-                Language = showTime.Language
+                Language = showTime.Language,
+                CreatedDate = DateTime.Now.ToString()
             };
         }
 

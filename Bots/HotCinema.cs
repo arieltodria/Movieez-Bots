@@ -63,6 +63,7 @@ namespace Movieez
                 {
                     parseMovieMetadata(MoviesList[i], moviesUrlList[i]);
                     _movieezApiUtils.PostMovie(MoviesList[i]);
+                    logger.Debug(MoviesList[i].ToString());
                 }
             }
             catch (Exception)
