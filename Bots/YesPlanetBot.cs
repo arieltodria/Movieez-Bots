@@ -25,7 +25,7 @@ namespace Movieez
         // Data obj
         public List<Movie> MoviesList;
         public List<Theater> TheatersList;
-        public List<Screening> ScreeningsList;
+        public List<Showtime> ScreeningsList;
         // Logger
         public static new NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
@@ -34,7 +34,7 @@ namespace Movieez
             initDriver(MainUrl);
             MoviesList = new List<Movie>();
             TheatersList = new List<Theater>();
-            ScreeningsList = new List<Screening>();
+            ScreeningsList = new List<Showtime>();
             _movieezApiUtils = new MovieezApiUtils(MovieezApiUtils.e_Theaters.YesPlanet);
         }
 
@@ -143,11 +143,13 @@ namespace Movieez
             int genre_index = 1;
             int cast_index = 2;
             int director_index = 3;
+            int original_language_index = 5;
             int rating_index = 6;
             movie.EnglishName = innerMetadataContainer.ToList()[english_name_index].GetAttribute("innerText");
             movie.Genre = innerMetadataContainer.ToList()[genre_index].GetAttribute("innerText");
             movie.Cast = innerMetadataContainer.ToList()[cast_index].GetAttribute("innerText");
             movie.Director = innerMetadataContainer.ToList()[director_index].GetAttribute("innerText");
+            movie.OriginalLanguage = innerMetadataContainer.ToList()[original_language_index].GetAttribute("innerText");
             movie.Rating = parseMovieRating(innerMetadataContainer.ToList()[rating_index].GetAttribute("innerText"));
             movie.PosterImage = parseMoviePoster();
             movie.MainImage = movie.PosterImage;
@@ -323,11 +325,12 @@ namespace Movieez
                 if (isMoviePlaying(movie))
                 {
                     Theater theater = parseTheaterFromScreenings();
-                    Screening screening = new Screening(movie, theater);
+                    Showtime screening = new Showtime(movie, theater);
 
                     screeningTimeInfoContainer = getScreeningContainer(); // Screening containers ordered by screening type
                     foreach (IWebElement screeningTimeInfo in screeningTimeInfoContainer)
                     {
+                        screening.MovieUrl = movie.Urls[Name];
                         screening.Type = parseScreeningType(screeningTimeInfo);
                         screening.Language = parseScreeningLanguage(screeningTimeInfo);
                         screeningTimes = getScreeningTimesElements(screeningTimeInfo);

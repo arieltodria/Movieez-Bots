@@ -13,6 +13,7 @@ namespace Movieez
         public string Name { get; set; }
         public string EnglishName { get; set; }
         public string Plot { get; set; }
+        public string OriginalLanguage { get; set; }
         public string TrailerUrl { get; set; }
         public string Duration { get; set; }
         public string Genre {get; set; }
@@ -29,7 +30,7 @@ namespace Movieez
         }
         public override string ToString()
         {
-            return $"Name={Name} EnglishName={EnglishName} Plot={Plot} Trailer_link={TrailerUrl} Duration={Duration} Genre={Genre} Rating={Rating} Cast={Cast} Director={Director} PosterImage={PosterImage} MainImage={MainImage} ReleaseDate={ReleaseDate}";
+            return $"Name={Name} EnglishName={EnglishName} Plot={Plot} OriginalLanguage={OriginalLanguage} Trailer_link={TrailerUrl} Duration={Duration} Genre={Genre} Rating={Rating} Cast={Cast} Director={Director} PosterImage={PosterImage} MainImage={MainImage} ReleaseDate={ReleaseDate}";
         }
     }
 }

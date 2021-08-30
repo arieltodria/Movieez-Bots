@@ -24,7 +24,7 @@ namespace Movieez
         // Data obj
         public List<Movie> MoviesList;
         public List<Theater> TheatersList;
-        public List<Screening> ScreeningsList;
+        public List<Showtime> ScreeningsList;
         /*// CSS query strings for elements
         string queryString_searchBoxes = "dl dt a";
         string queryString_boxList = "dd[role='menuitem']";
@@ -36,7 +36,7 @@ namespace Movieez
             initDriver(MainUrl);
             MoviesList = new List<Movie>();
             TheatersList = new List<Theater>();
-            ScreeningsList = new List<Screening>();
+            ScreeningsList = new List<Showtime>();
             _movieezApiUtils = new MovieezApiUtils(MovieezApiUtils.e_Theaters.CinemaCity);
         }
 
@@ -139,7 +139,7 @@ namespace Movieez
                     Click(time_search_box, true, true);
                     try
                     {
-                        Screening screening = parseScreeningMetadata(movie, theater_search_box, date_search_box, time);
+                        Showtime screening = parseScreeningMetadata(movie, theater_search_box, date_search_box, time);
                         ScreeningsList.Add(screening);
                         if (movieFromApi != null)
                         {
@@ -224,13 +224,14 @@ namespace Movieez
             return FindElementsByFather(By.CssSelector(CinemaCity_QueryStrings.screeningTimes), initTimeSearchBoxList());
         }
 
-        Screening parseScreeningMetadata(Movie movie, IWebElement theater, IWebElement date, IWebElement time)
+        Showtime parseScreeningMetadata(Movie movie, IWebElement theater, IWebElement date, IWebElement time)
         {
             logger.Debug("Parsing screening metadata");
-            Screening screening = new Screening();
+            Showtime screening = new Showtime();
             try
             {
                 screening.Movie = movie;
+                screening.MovieUrl = movie.Urls[Name];
                 screening.Theater = new Theater(parseScreeningLocation(theater.GetAttribute("innerText")), "");
                 screening.Time = DateTime.Parse(date.GetAttribute("innerText") + " " + time.GetAttribute("innerText"));
                 screening.Type = parseScreeningType(theater.GetAttribute("innerText"));

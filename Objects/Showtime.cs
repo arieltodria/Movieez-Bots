@@ -6,28 +6,30 @@ using System.Threading.Tasks;
 
 namespace Movieez
 {
-    public class Screening
+    public class Showtime
     {
         public Movie Movie { get; set; }
+        public string MovieUrl { get; set; }
         public DateTime Time { get; set; }
         public Theater Theater { get; set; }
         public string Type { get; set; }
         public string Language { get; set; }
-        public Screening() { }
-        public Screening(Movie movie, DateTime time, Theater theater, string type = "", string language = "")
+        public Showtime() { }
+        public Showtime(Movie movie, string movieUrl, DateTime time, Theater theater, string type = "", string language = "")
         {
             Movie = movie;
+            MovieUrl = movieUrl;
             Time = time;
             Theater = theater;
             Type = type;
             Language = language;
         }
-        public Screening(Movie movie, Theater theater)
+        public Showtime(Movie movie, Theater theater)
         {
             Movie = movie;
             Theater = theater;
         }
-        public Screening(Movie movie)
+        public Showtime(Movie movie)
         {
             Movie = movie;
         }

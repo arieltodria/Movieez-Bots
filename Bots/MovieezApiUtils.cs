@@ -50,7 +50,7 @@ namespace Movieez.Bots
             }
         }
 
-        public void PostShowTime(Screening showTime, int movieId)
+        public void PostShowTime(Showtime showTime, int movieId)
         {
             var showTimeModel = mapShowTimeToApiModel(showTime);
             showTimeModel.MovieId = movieId;
@@ -103,6 +103,7 @@ namespace Movieez.Bots
                 Name = movie.Name,
                 EnglishName = movie.EnglishName,
                 Plot = movie.Plot,
+                OriginalLanguage = movie.OriginalLanguage,
                 Duration = int.Parse(movie.Duration),
                 Genre = movie.Genre,
                 Cast = movie.Cast,
@@ -118,7 +119,7 @@ namespace Movieez.Bots
             };
         }
 
-        private API.Model.Models.ShowTime mapShowTimeToApiModel(Screening showTime)
+        private API.Model.Models.ShowTime mapShowTimeToApiModel(Showtime showTime)
         {
             return new API.Model.Models.ShowTime
             {
@@ -126,6 +127,7 @@ namespace Movieez.Bots
                 TheaterName = showTime.Theater.Name,
                 TheaterLocation = showTime.Theater.Address,
                 MovieName = showTime.Movie.Name,
+                MovieUrl = showTime.MovieUrl,
                 Day = showTime.Time.ToString("dd/MM/yyyy"),
                 Time = showTime.Time.ToString("hh:mm"),
                 Type = showTime.Type,

@@ -12,7 +12,7 @@ namespace Movieez
         string MainUrl = "https://hotcinema.co.il/";
         public List<Movie> MoviesList;
         public List<Theater> TheatersList;
-        public List<Screening> ScreeningsList;
+        public List<Showtime> ScreeningsList;
         public List<string> moviesUrlList;
         // Logger
         public static new NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
@@ -21,7 +21,7 @@ namespace Movieez
             initDriver(MainUrl);
             MoviesList = new List<Movie>();
             TheatersList = new List<Theater>();
-            ScreeningsList = new List<Screening>();
+            ScreeningsList = new List<Showtime>();
             moviesUrlList = new List<string>();
             _movieezApiUtils = new MovieezApiUtils(MovieezApiUtils.e_Theaters.HotCinema);
 
@@ -126,7 +126,7 @@ namespace Movieez
                         string timeOfMovie = times[z].GetAttribute("innerHTML").ToString().Trim();
                         Theater theaterForScreening = new Theater(theater.Name, theater.Address);
                         DateTime time = parseMovieTime(timeOfMovie);
-                        Screening screening = new Screening(MoviesList[k], time, theaterForScreening);
+                        Showtime screening = new Showtime(MoviesList[k], MoviesList[k].Urls[Name], time, theaterForScreening);
                         ScreeningsList.Add(screening);
                         // post showtime
                         /*var movieFromApi = _movieezApiUtils.GetMovie(MoviesList[k].Name).Result;
