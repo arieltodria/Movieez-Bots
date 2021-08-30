@@ -26,20 +26,23 @@ namespace Movieez.Bots
             _theater = theater;
         }
 
-        public void PostMovie(Movie movie)
+        public void PostMovie(Movie movieToAdd)
         {
-            var movieModel = mapMovieToApiModel(movie);
+            var movieModel = mapMovieToApiModel(movieToAdd);
             string movieJson = JsonSerializer.Serialize(movieModel);
             var content = new StringContent(movieJson.ToString(), Encoding.UTF8, "application/json");
-            var existingMove = GetMovie(movie.Name).Result;
+            var existingMovie = GetMovie(movieToAdd.Name).Result;
+            
+            if (existingMovie != null)
+            {
+                logger.Debug($"Movie {(movieToAdd.EnglishName != null ? movieToAdd.EnglishName : movieToAdd.Name)} already exists");
+            }
 
             HttpResponseMessage postMovieResponse = _client.PostAsync("api/Movies", content).Result;
 
             if (postMovieResponse.IsSuccessStatusCode)
             {
-                logger.Debug($"New Movie is posted successfully to API");
-                //logger.Debug("Request Message Information:- \n\n" + postMovieResponse.RequestMessage + "\n");
-                //logger.Debug("Response Message Header \n\n" + postMovieResponse.Content.Headers + "\n");
+                logger.Debug($"New Movie '{(movieToAdd.EnglishName != null ? movieToAdd.EnglishName : movieToAdd.Name)}' posted successfully");
             }
             else
             {
@@ -56,7 +59,7 @@ namespace Movieez.Bots
             HttpResponseMessage postMovieResponse = _client.PostAsync("api/ShowTimes", content).Result;
             if (postMovieResponse.IsSuccessStatusCode)
             {
-                logger.Debug($"New Showtime is posted to API");
+                logger.Debug($"New Showtime {showTime.Time} posted successfully");
                 //Console.WriteLine("Request Message Information:- \n\n" + postMovieResponse.RequestMessage + "\n");
                 //Console.WriteLine("Response Message Header \n\n" + postMovieResponse.Content.Headers + "\n");
             }
@@ -108,7 +111,7 @@ namespace Movieez.Bots
                 PosterImage = movie.PosterImage,
                 MainImage = movie.MainImage,
                 TrailerUrl = movie.TrailerUrl,
-                ReleaseDate = movie.ReleaseDate.ToString(),
+                ReleaseDate = movie.ReleaseDate.ToShortDateString(),
                 IsActive = DateTime.Now > movie.ReleaseDate,
                 CreatedDate = DateTime.Now.ToString(),
                 UpdatedDate = DateTime.Now.ToString()

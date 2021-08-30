@@ -106,6 +106,15 @@ namespace Movieez.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to div[id^=&apos;movie-wrapper&apos;].
+        /// </summary>
+        internal static string loadedMovies {
+            get {
+                return ResourceManager.GetString("loadedMovies", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to div[class=&apos;siteinfo&apos;] span:first-of-type.
         /// </summary>
         internal static string location {
@@ -174,6 +183,15 @@ namespace Movieez.Resources {
         internal static string searchBoxes {
             get {
                 return ResourceManager.GetString("searchBoxes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        internal static string String1 {
+            get {
+                return ResourceManager.GetString("String1", resourceCulture);
             }
         }
         

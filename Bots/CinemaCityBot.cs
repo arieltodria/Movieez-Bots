@@ -63,6 +63,7 @@ namespace Movieez
 
         void initMoviesElements()
         {
+            logger.Debug("Finding movie elements");
             movies = this.driver.FindElements(By.ClassName("flipper"));
         }
 
@@ -110,9 +111,11 @@ namespace Movieez
                 {
                     Click(theater, false, true);
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
                     logger.Error("Failed to click on theater");
+                    logger.Error(e);
+                    saveDebugData();
                 }
                 // Running only on 1st day's screenings
                 closeChatPopUp();
@@ -122,9 +125,11 @@ namespace Movieez
                     date = getDateElement();
                     Click(date, false, true);
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
                     logger.Error("Failed to click on date");
+                    logger.Error(e);
+                    saveDebugData();
                 }
 
                 screeningTimes = initScreeningTimes();
@@ -147,9 +152,11 @@ namespace Movieez
                             }
                         }
                     }
-                    catch (Exception)
+                    catch (Exception e)
                     {
                         logger.Error("Failed to click on time");
+                        logger.Error(e);
+                        saveDebugData();
                     }
                 }
                 theather_names = initTheatersNames();
@@ -160,6 +167,7 @@ namespace Movieez
         
         IReadOnlyCollection<IWebElement> initSearchBoxes()
         {
+            logger.Debug("Finding search boxes");
             return FindElementsByDriver(By.CssSelector(CinemaCity_QueryStrings.searchBoxes));
         }
 
@@ -178,7 +186,7 @@ namespace Movieez
 
         IReadOnlyCollection<IWebElement> initSearchBoxesLists()
         {
-
+            logger.Debug("Finding search boxes lists");
             return FindElementsByDriver(By.CssSelector(CinemaCity_QueryStrings.boxList));
         }
 
@@ -199,29 +207,42 @@ namespace Movieez
 
         IReadOnlyCollection<IWebElement> initTheatersNames()
         {
+            logger.Debug("Finding theater names");
             return FindElementsByFather(By.CssSelector(CinemaCity_QueryStrings.theaterSearchBoxList), initTheatersSearchBoxList());
         }
 
         IWebElement getDateElement()
         {
+            logger.Debug("Finding day element of 1st day");
             // returns 1st day from days list
             return FindElementsByFather(By.CssSelector(CinemaCity_QueryStrings.dateBoxSearchList), initDateSearchBoxList()).ToList()[0];
         }
 
         IReadOnlyCollection<IWebElement> initScreeningTimes()
         {
+            logger.Debug("Finding screening times");
             return FindElementsByFather(By.CssSelector(CinemaCity_QueryStrings.screeningTimes), initTimeSearchBoxList());
         }
 
         Screening parseScreeningMetadata(Movie movie, IWebElement theater, IWebElement date, IWebElement time)
         {
+            logger.Debug("Parsing screening metadata");
             Screening screening = new Screening();
-            screening.Movie = movie;
-            screening.Theater = new Theater(parseScreeningLocation(theater.GetAttribute("innerText")), "");
-            screening.Time = DateTime.Parse(date.GetAttribute("innerText") + " " + time.GetAttribute("innerText"));
-            screening.Type = parseScreeningType(theater.GetAttribute("innerText"));
-            logger.Debug("New screening added " + screening.Time);
-            return screening;
+            try
+            {
+                screening.Movie = movie;
+                screening.Theater = new Theater(parseScreeningLocation(theater.GetAttribute("innerText")), "");
+                screening.Time = DateTime.Parse(date.GetAttribute("innerText") + " " + time.GetAttribute("innerText"));
+                screening.Type = parseScreeningType(theater.GetAttribute("innerText"));
+                logger.Debug("New screening added " + screening.Time);
+                return screening;
+            }
+            catch (Exception e)
+            {
+                logger.Error(e);
+                saveDebugData();
+                return null;
+            }
         }
 
         string parseScreeningType(string location)
@@ -262,6 +283,7 @@ namespace Movieez
         // Parse movie's url from main cinema city page, url is taken from poster
         void parseMoviePage(Movie movie, IWebElement movieElement)
         {
+            logger.Debug("Finding movie's url");
             goToUrl(movieElement.FindElement(By.CssSelector(CinemaCity_QueryStrings.movieUrl)).GetAttribute("href").ToString());
             movie.Urls.Add(Name, driver.Url);
         }
@@ -275,16 +297,22 @@ namespace Movieez
             int INNER_METADATA_RELEASE_DATE_INDEX = 2;
             int INNER_METADATA_RATING_INDEX = 3;
 
+            logger.Debug("Finding info_div element");
             IWebElement info_div = FindElementByDriver(By.CssSelector(CinemaCity_QueryStrings.info_div));
+            logger.Debug("Finding movie's plot element");
             movie.Plot = FindElementByFather(By.CssSelector(CinemaCity_QueryStrings.plot), info_div).GetAttribute("innerText");
+            logger.Debug("Finding movie's plot element");
             IWebElement info_div_inner = FindElementByFather(By.CssSelector(CinemaCity_QueryStrings.info_div_inner), info_div);
+            logger.Debug("Finding inner_metadata element");
             IReadOnlyCollection<IWebElement> inner_metadata = FindElementsByFather(By.CssSelector(CinemaCity_QueryStrings.inner_metadata), info_div_inner);
 
             movie.Genre += parseMovieGenre(inner_metadata.ToList()[INNER_METADATA_GENRE_INDEX].Text);
             movie.Duration = parseMovieDuration(inner_metadata.ToList()[INNER_METADATA_DURATION_INDEX].Text);
             movie.ReleaseDate = parseMovieReleaseDate(inner_metadata.ToList()[INNER_METADATA_RELEASE_DATE_INDEX].Text);
             movie.Rating = parseMovieRating(inner_metadata.ToList()[INNER_METADATA_RATING_INDEX].Text);
+            logger.Debug("Finding movie TrailerUrl element");
             movie.TrailerUrl = FindElementByDriver(By.Id("fullpagevideo")).GetAttribute("src");
+            logger.Debug("Finding MainImage element");
             movie.MainImage = FindElementByDriver(By.CssSelector(CinemaCity_QueryStrings.MainImage)).GetAttribute("src");
             parseMovieName(movie);
 
@@ -302,6 +330,7 @@ namespace Movieez
 
         void parseMovieName(Movie movie)
         {
+            logger.Debug("Finding MovieName element");
             string tmpName = driver.FindElement(By.CssSelector(CinemaCity_QueryStrings.tmpMovieName)).GetAttribute("innerText");
             if (tmpName.Contains('/'))
             {
@@ -309,11 +338,15 @@ namespace Movieez
                 movie.Name = fixMovieName(tmpName.Substring(0, tmpName.IndexOf('/')));
             }
             else
+            {
+                logger.Debug("English name is not found");
                 movie.Name = fixMovieName(tmpName);
+            }
         }
 
         void loadAllMovies()
         {
+            logger.Debug("Finding load_button element");
             IWebElement load_button = this.driver.FindElement(By.ClassName("loadmoreposts"));
             while(!isLoadingOver())
             {
@@ -324,7 +357,8 @@ namespace Movieez
         /* returns true if all movies loaded in cinema city's main page */
         bool isLoadingOver()
         {
-            IReadOnlyCollection<IWebElement> loadedMovies = FindElementsByDriver(By.CssSelector("div[id^='movie-wrapper']"));
+            logger.Debug("Finding Movies elements");
+            IReadOnlyCollection<IWebElement> loadedMovies = FindElementsByDriver(By.CssSelector(CinemaCity_QueryStrings.loadedMovies));
             if (loadedMovies != null)
             {
                 IWebElement lastMovie = loadedMovies.Reverse().ToList()[0];
@@ -338,6 +372,7 @@ namespace Movieez
         /* Close the chat bot popup*/
         void closeChatPopUp()
         {
+            logger.Debug("Finding openBotButton element");
             if (FindElementsByDriver(By.CssSelector(CinemaCity_QueryStrings.openBotButton)) != null)
             {
                 IWebElement openBotButton = FindElementByDriver(By.CssSelector(CinemaCity_QueryStrings.openBotButton));
@@ -350,6 +385,7 @@ namespace Movieez
                 }
             }
             wait();
+            logger.Debug("Finding closeBotButton element");
             IWebElement closeBotButton = FindElementByDriver(By.Id("lblCloseChat")).FindElement(By.CssSelector("span span a"));
             try
             {

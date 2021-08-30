@@ -127,6 +127,7 @@ namespace Movieez
             logger.Info("Parsing movie's metadata");
             goToUrl(movie.Urls[Name]);
             closeCookiesPopUp();
+            scrollToLoadAllElements();
             movie.Name = fixMovieName(parseMovieName());
             movie.EnglishName = parseEnglishNameFromMovieUrl(movie.Urls[Name]);
             movie.Duration = parseMovieDuraion();
@@ -147,8 +148,8 @@ namespace Movieez
             movie.Genre = innerMetadataContainer.ToList()[genre_index].GetAttribute("innerText");
             movie.Cast = innerMetadataContainer.ToList()[cast_index].GetAttribute("innerText");
             movie.Director = innerMetadataContainer.ToList()[director_index].GetAttribute("innerText");
-            movie.Rating = parseMovieRating(innerMetadataContainer.ToList()[rating_index].GetAttribute("innerText")); 
-            movie.PosterImage = FindElementByDriver(By.CssSelector(YesPlanet_QueryStrings.PosterImage), true).GetAttribute("src");
+            movie.Rating = parseMovieRating(innerMetadataContainer.ToList()[rating_index].GetAttribute("innerText"));
+            movie.PosterImage = parseMoviePoster();
             movie.MainImage = movie.PosterImage;
 
             MoviesList.Add(movie);
@@ -168,6 +169,15 @@ namespace Movieez
             if (movieNameElement != null)
                 return movieNameElement.GetAttribute("innerText");
             return "";
+        }
+
+        string parseMoviePoster()
+        {
+            IWebElement posterElment = FindElementByDriver(By.CssSelector(YesPlanet_QueryStrings.PosterImage), true);
+            var poster = posterElment.GetAttribute("src");
+            if (poster.Contains("film.placeholder.poster.jpg"))
+                return null;
+            return poster;
         }
 
         string parseMoviePlot()

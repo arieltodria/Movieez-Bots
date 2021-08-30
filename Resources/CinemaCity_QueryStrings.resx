@@ -132,6 +132,9 @@
   <data name="inner_metadata" xml:space="preserve">
     <value>p</value>
   </data>
+  <data name="loadedMovies" xml:space="preserve">
+    <value>div[id^='movie-wrapper']</value>
+  </data>
   <data name="location" xml:space="preserve">
     <value>div[class='siteinfo'] span:first-of-type</value>
   </data>
@@ -155,6 +158,9 @@
   </data>
   <data name="searchBoxes" xml:space="preserve">
     <value>dl dt a</value>
+  </data>
+  <data name="String1" xml:space="preserve">
+    <value />
   </data>
   <data name="theaterPageLink" xml:space="preserve">
     <value>div div a</value>

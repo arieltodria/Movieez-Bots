@@ -41,7 +41,7 @@ namespace Movieez
 
         public IWebElement FindElementByDriver(By by, bool runScrollToLoadAllElements = false)
         {
-            logger.Debug($"Finding element by driver");
+            logger.Trace($"Finding element by driver");
             if (runScrollToLoadAllElements)
                 scrollToLoadAllElements();
             wait();
@@ -56,7 +56,7 @@ namespace Movieez
 
         public IWebElement FindElementByFather(By by, IWebElement father, bool runScrollToLoadAllElements = false)
         {
-            logger.Debug($"Finding element by father");
+            logger.Trace($"Finding element by father");
             if (runScrollToLoadAllElements)
                 scrollToLoadAllElements();
             wait();
@@ -71,7 +71,7 @@ namespace Movieez
 
         public IReadOnlyCollection<IWebElement> FindElementsByDriver(By by, bool runScrollToLoadAllElements = false)
         {
-            logger.Debug($"Finding elements by driver");
+            logger.Trace($"Finding elements by driver");
             if (runScrollToLoadAllElements)
                 scrollToLoadAllElements();
             wait();
@@ -86,7 +86,7 @@ namespace Movieez
 
         public IReadOnlyCollection<IWebElement> FindElementsByFather(By by, IWebElement father, bool runScrollToLoadAllElements = false)
         {
-            logger.Debug($"Finding elements by father");
+            logger.Trace($"Finding elements by father");
             if (runScrollToLoadAllElements)
                 scrollToLoadAllElements();
             wait();
@@ -102,7 +102,7 @@ namespace Movieez
 
         public void Click(IWebElement element, bool runGoToElement = false, bool ruHover = true)
         {
-            logger.Debug("Clicking on element");
+            logger.Trace("Clicking on element");
             if (runGoToElement)
             {
                 goToElement(element);
@@ -152,7 +152,7 @@ namespace Movieez
 
         public void hover(IWebElement el, bool runScroll = false)
         {
-            logger.Debug("Hovering on element");
+            logger.Trace("Hovering on element");
             if (runScroll)
                 scrollToLoadAllElements();
             for (int i = 0; i < GlobalVars.ACTION_RETRY_COUNTER; i++)
@@ -206,7 +206,7 @@ namespace Movieez
         public string fixMovieName(string name)
         {
             logger.Debug("Fixing movie's hebrew name");
-            string[] stringsToRemove = { "עברית עם כתוביות", "עברית" };
+            string[] stringsToRemove = { "עברית עם כתוביות", "עברית", "אנגלית"};
             foreach (string str in stringsToRemove)
             {
                 if (name.Contains(str))
@@ -243,12 +243,12 @@ namespace Movieez
         public void closeBrowser()
         {
             logger.Info("Closing browser...");
-            logger.Info($"C");
             driver.Close();
         }
 
         public void saveDebugData()
         {
+            logger.Info("Saving debug data of bot run");
             Directory.CreateDirectory(Path.GetDirectoryName(AppDomain.CurrentDomain.BaseDirectory + $"movieezLogs\\Data\\"));
             var timestamp = DateTime.Now.ToString("dd.MM.yyyy_HH-mm");
             savePageHtml(timestamp);
