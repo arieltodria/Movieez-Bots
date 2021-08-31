@@ -17,7 +17,7 @@ namespace Movieez
     {
         string Name = "CinemaCity";
         string MainUrl = "https://www.cinema-city.co.il/";
-        string TheatersPageUrl = "https://www.cinema-city.co.il/locations";
+        //string TheatersPageUrl = "https://www.cinema-city.co.il/locations";
 
         // Web elements
         private ReadOnlyCollection<IWebElement> movies; // Movies' web elements list
@@ -25,10 +25,6 @@ namespace Movieez
         public List<Movie> MoviesList;
         public List<Theater> TheatersList;
         public List<Showtime> ScreeningsList;
-        /*// CSS query strings for elements
-        string queryString_searchBoxes = "dl dt a";
-        string queryString_boxList = "dd[role='menuitem']";
-        string queryString_theaterSearchBoxList = "ul li a";*/
 
         public CinemaCityBot()
         {
@@ -278,28 +274,6 @@ namespace Movieez
         {
             return Regex.Replace(location, @"\((.*)\)", "");
         }
-
-        /**void parseTheaters()
-        {
-            goToUrl(TheatersPageUrl);
-            try {
-                IReadOnlyCollection<IWebElement> theaters = driver.FindElements(By.CssSelector(CinemaCity_QueryStrings.theaters));
-                foreach (IWebElement theater in theaters)
-                {
-                    string theaterPageLink = theater.FindElement(By.CssSelector(CinemaCity_QueryStrings.theaterPageLink)).GetAttribute("href");
-                    string theaterName = theater.FindElement(By.ClassName("theatre-name")).GetAttribute("innerText");
-                    goToUrl(theaterPageLink);
-                    List<IWebElement> addressElement = driver.FindElements(By.ClassName("all-info")).ToList();
-                    string theaterAddress = addressElement[2].GetAttribute("innerText");
-                    TheatersList.Add(new Theater(theaterName, theaterAddress));
-                    goToUrl(TheatersPageUrl);
-                }
-            }
-            catch{
-                Console.WriteLine("Failed to parse Theaters");
-            }
-            goToUrl(MainUrl);
-        } **/
 
         // Parse movie's url from main cinema city page, url is taken from poster
         void parseMoviePage(Movie movie, IWebElement movieElement)

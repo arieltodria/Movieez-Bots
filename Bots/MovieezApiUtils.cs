@@ -125,9 +125,7 @@ namespace Movieez.Bots
                 MainImage = movie.MainImage,
                 TrailerUrl = movie.TrailerUrl,
                 ReleaseDate = movie.ReleaseDate.ToShortDateString(),
-                IsActive = DateTime.Now > movie.ReleaseDate,
-                CreatedDate = DateTime.Now.ToString(),
-                UpdatedDate = DateTime.Now.ToString()
+                IsActive = DateTime.Now > movie.ReleaseDate
             };
         }
 
@@ -143,8 +141,7 @@ namespace Movieez.Bots
                 Day = showTime.Time.ToString("dd/MM/yyyy"),
                 Time = showTime.Time.ToString("HH:mm"),
                 Type = showTime.Type,
-                Language = showTime.Language,
-                CreatedDate = DateTime.Now.ToString()
+                Language = showTime.Language
             };
         }
 
