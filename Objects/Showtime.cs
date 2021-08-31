@@ -15,7 +15,7 @@ namespace Movieez
         public string Type { get; set; }
         public string Language { get; set; }
         public Showtime() { }
-        public Showtime(Movie movie, string movieUrl, DateTime time, Theater theater, string type = "", string language = "")
+        public Showtime(Movie movie, DateTime time, Theater theater, string movieUrl="", string type = "", string language = "")
         {
             Movie = movie;
             MovieUrl = movieUrl;

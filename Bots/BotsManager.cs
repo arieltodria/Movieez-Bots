@@ -28,8 +28,8 @@ namespace Movieez
         public void run()
         {
             logger.Info("Running BotsManager");
+            //LaunchYesPlanetBot();
             //LaunchCinemaCityBot();
-            LaunchYesPlanetBot();
             LaunchHotCinemaBot();
         }
 

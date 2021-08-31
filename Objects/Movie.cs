@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
@@ -17,12 +18,13 @@ namespace Movieez
         public string TrailerUrl { get; set; }
         public string Duration { get; set; }
         public string Genre {get; set; }
-        public Rating Rating {get; set; }
+        public string Rating {get; set; }
         public string Cast { get; set; }
         public string Director { get; set; }
         public string PosterImage { get; set; }
         public string MainImage { get; set; }
         public DateTime ReleaseDate { get; set; }
+
         public Movie() 
         {
             Urls = new Dictionary<string, string>();
@@ -49,12 +51,12 @@ public enum Genre
     Unknown
 }
 
-public enum Rating
+public static class Rating
 {
-    gRated,
-    pgRated,
-    pg13Rated,
-    rRated,
-    nc17Rated,
-    Unknown
+    public static readonly string gRated = "לכל הגלאים";
+    public static readonly string pgRated = "13+";
+    public static readonly string pg13Rated = "13+";
+    public static readonly string rRated = "17+";
+    public static readonly string nc17Rated = "17+";
+    public static readonly string Unknown = "אחר";
 }

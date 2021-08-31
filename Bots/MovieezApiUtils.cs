@@ -7,6 +7,9 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using System.Runtime;
+using System.ComponentModel;
+using System.Xml.Linq;
 
 namespace Movieez.Bots
 {
@@ -31,7 +34,7 @@ namespace Movieez.Bots
             var movieModel = mapMovieToApiModel(movieToAdd);
             string movieJson = JsonSerializer.Serialize(movieModel);
             var content = new StringContent(movieJson.ToString(), Encoding.UTF8, "application/json");
-            var existingMovie = GetMovie(movieToAdd.Name).Result;
+            var existingMovie = GetMovie(movieToAdd).Result;
             
             if (existingMovie != null)
             {
@@ -69,10 +72,19 @@ namespace Movieez.Bots
             }
         }
 
-        public async Task<API.Model.Models.Movie> GetMovie(string movieName)
+        public async Task<API.Model.Models.Movie> GetMovie(Movie movie)
         {
+            string nameForSearch;
             API.Model.Models.Movie fetchedMovieObject = null;
-            HttpResponseMessage getMovieResponse = _client.GetAsync($"api/Movies/{movieName}").Result;
+            if (movie.EnglishName != null)
+            {
+                nameForSearch = movie.EnglishName;
+            }
+            else
+            {
+                nameForSearch = movie.Name;
+            }
+            HttpResponseMessage getMovieResponse = _client.GetAsync($"api/Movies/{nameForSearch}").Result;
             if (getMovieResponse.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 var responseContent = await getMovieResponse.Content.ReadAsStringAsync();
@@ -108,7 +120,7 @@ namespace Movieez.Bots
                 Genre = movie.Genre,
                 Cast = movie.Cast,
                 Director = movie.Director,
-                Rating = movie.Rating.ToString(),
+                Rating = movie.Rating,
                 PosterImage = movie.PosterImage,
                 MainImage = movie.MainImage,
                 TrailerUrl = movie.TrailerUrl,
@@ -129,7 +141,7 @@ namespace Movieez.Bots
                 MovieName = showTime.Movie.Name,
                 MovieUrl = showTime.MovieUrl,
                 Day = showTime.Time.ToString("dd/MM/yyyy"),
-                Time = showTime.Time.ToString("hh:mm"),
+                Time = showTime.Time.ToString("HH:mm"),
                 Type = showTime.Type,
                 Language = showTime.Language,
                 CreatedDate = DateTime.Now.ToString()

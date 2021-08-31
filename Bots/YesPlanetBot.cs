@@ -250,7 +250,7 @@ namespace Movieez
             IReadOnlyCollection<IWebElement> screeningTimeInfoContainer;
             IReadOnlyCollection<IWebElement> screeningTimes;
 
-            var movieFromApi = _movieezApiUtils.GetMovie(movie.Name).Result;
+            var movieFromApi = _movieezApiUtils.GetMovie(movie).Result;
             List<Movieez.API.Model.Models.ShowTime> showTimesFromApi = null;
             if (movieFromApi != null)
             {

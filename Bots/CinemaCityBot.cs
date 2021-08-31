@@ -94,7 +94,7 @@ namespace Movieez
             IWebElement date;
 
             int theatersCount = theather_names.Count;
-            var movieFromApi = _movieezApiUtils.GetMovie(movie.Name).Result;
+            var movieFromApi = _movieezApiUtils.GetMovie(movie).Result;
             List<Movieez.API.Model.Models.ShowTime> showTimesFromApi = null;
             if (movieFromApi != null)
             {
@@ -104,7 +104,18 @@ namespace Movieez
             // Run on all theaters
             for (int i = 0; i < theatersCount; i++)
             {
-                IWebElement theater = theather_names.ToList()[i];
+                IWebElement theater;
+                try
+                {
+                    theater = theather_names.ToList()[i];
+                }
+                catch(Exception e)
+                {
+                    logger.Error("Failed to parse theaters");
+                    logger.Error(e);
+                    saveDebugData();
+                    break;
+                }
                 closeChatPopUp();
                 Click(theater_search_box, true, true);
                 try
@@ -133,33 +144,42 @@ namespace Movieez
                 }
 
                 screeningTimes = initScreeningTimes();
-                foreach (IWebElement time in screeningTimes)
+                try
                 {
-                    closeChatPopUp();
-                    Click(time_search_box, true, true);
-                    try
+                    foreach (IWebElement time in screeningTimes)
                     {
-                        Showtime screening = parseScreeningMetadata(movie, theater_search_box, date_search_box, time);
-                        ScreeningsList.Add(screening);
-                        if (movieFromApi != null)
+                        closeChatPopUp();
+                        Click(time_search_box, true, true);
+                        try
                         {
-                            var showTimeExists = showTimesFromApi.Any(st =>
-                            st.Day == screening.Time.ToString("dd/MM/yyyy") &&
-                            st.Time == screening.Time.ToString("hh:mm"));
-                            if (!showTimeExists)
+                            Showtime screening = parseScreeningMetadata(movie, theater_search_box, date_search_box, time);
+                            ScreeningsList.Add(screening);
+                            if (movieFromApi != null)
                             {
-                                _movieezApiUtils.PostShowTime(screening, movieFromApi.ID);
+                                var showTimeExists = showTimesFromApi.Any(st =>
+                                st.Day == screening.Time.ToString("dd/MM/yyyy") &&
+                                st.Time == screening.Time.ToString("hh:mm"));
+                                if (!showTimeExists)
+                                {
+                                    _movieezApiUtils.PostShowTime(screening, movieFromApi.ID);
+                                }
                             }
                         }
+                        catch (Exception e)
+                        {
+                            logger.Error("Failed to click on time");
+                            logger.Error(e);
+                            saveDebugData();
+                        }
                     }
-                    catch (Exception e)
-                    {
-                        logger.Error("Failed to click on time");
-                        logger.Error(e);
-                        saveDebugData();
-                    }
+                    theather_names = initTheatersNames();
                 }
-                theather_names = initTheatersNames();
+                catch(Exception e)
+                {
+                    logger.Error("Failed to click on screening time");
+                    logger.Error(e);
+                    saveDebugData();
+                }
             }
             goToUrl(MainUrl); // Back to main
         }
@@ -315,6 +335,7 @@ namespace Movieez
             movie.TrailerUrl = FindElementByDriver(By.Id("fullpagevideo")).GetAttribute("src");
             logger.Debug("Finding MainImage element");
             movie.MainImage = FindElementByDriver(By.CssSelector(CinemaCity_QueryStrings.MainImage)).GetAttribute("src");
+            movie.PosterImage = movie.MainImage;
             parseMovieName(movie);
 
             // Movie obj is ready
