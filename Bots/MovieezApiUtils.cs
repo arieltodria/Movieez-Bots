@@ -23,7 +23,7 @@ namespace Movieez.Bots
             _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             _theater = theater;
         }
-
+       
         public void PostMovie(Movie movie)
         {
             var movieModel = mapMovieToApiModel(movie);
@@ -104,6 +104,7 @@ namespace Movieez.Bots
                 PosterImage = movie.PosterImage,
                 MainImage = movie.PosterImage,
                 TrailerUrl = movie.TrailerUrl,
+                ReleaseDate = movie.ReleaseDate.Date.ToString("dd/MM/yyyy"),
                 IsActive = true
             };
         }
@@ -119,7 +120,9 @@ namespace Movieez.Bots
                 Day = showTime.Time.ToString("dd/MM/yyyy"),
                 Time = showTime.Time.ToString("hh:mm"),
                 Type = showTime.Type,
-                Language = showTime.Language
+                Language = showTime.Language,
+                MovieUrl = showTime.Movie.Urls.Values,
+
             };
         }
 

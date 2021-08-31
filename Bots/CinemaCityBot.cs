@@ -274,8 +274,11 @@ namespace Movieez
             movie.Plot = FindElementByFather(By.CssSelector(CinemaCity_QueryStrings.plot), info_div).GetAttribute("innerText");
             IWebElement info_div_inner = FindElementByFather(By.CssSelector(CinemaCity_QueryStrings.info_div_inner), info_div);
             IReadOnlyCollection<IWebElement> inner_metadata = FindElementsByFather(By.CssSelector(CinemaCity_QueryStrings.inner_metadata), info_div_inner);
-
-            movie.Genre += parseMovieGenre(inner_metadata.ToList()[INNER_METADATA_GENRE_INDEX].Text);
+            string GenreOfMovie = " ";
+            GenreOfMovie += parseMovieGenre(inner_metadata.ToList()[INNER_METADATA_GENRE_INDEX].Text);
+            movie.Genre = parseMovieGenre(GenreOfMovie);
+            GenreOfMovie = GenreOfMovie.Trim();
+        
             movie.Duration = parseMovieDuration(inner_metadata.ToList()[INNER_METADATA_DURATION_INDEX].Text);
             movie.ReleaseDate = parseMovieReleaseDate(inner_metadata.ToList()[INNER_METADATA_RELEASE_DATE_INDEX].Text);
             movie.Rating = parseMovieRating(inner_metadata.ToList()[INNER_METADATA_RATING_INDEX].Text);

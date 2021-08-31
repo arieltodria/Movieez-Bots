@@ -138,8 +138,10 @@ namespace Movieez
             int rating_index = 6;
             movie.EnglishName = innerMetadataContainer.ToList()[english_name_index].GetAttribute("innerText");
             Console.WriteLine(movie.EnglishName); // Debug
-            movie.Genre = innerMetadataContainer.ToList()[genre_index].GetAttribute("innerText");
+            string GenreMovie = innerMetadataContainer.ToList()[genre_index].GetAttribute("innerText");
+            movie.Genre = parseMovieGenre(GenreMovie);
             movie.Cast = innerMetadataContainer.ToList()[cast_index].GetAttribute("innerText");
+    
             movie.Director = innerMetadataContainer.ToList()[director_index].GetAttribute("innerText");
             movie.Rating = parseMovieRating(innerMetadataContainer.ToList()[rating_index].GetAttribute("innerText")); 
             movie.PosterImage = FindElementByDriver(By.CssSelector(YesPlanet_QueryStrings.PosterImage), true).GetAttribute("src");

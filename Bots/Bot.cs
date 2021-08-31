@@ -156,29 +156,46 @@ namespace Movieez
             }
             wait();
         }
-        public Genre parseMovieGenre(string type)
+        public string parseMovieGenre(string type)
         {
-            if (type.IndexOf("קומדיה") != -1)
-                return Genre.Comedy;
-            if (type.IndexOf("אקשן") != -1)
-                return Genre.Action;
-            if (type.IndexOf("מותחן") != -1 || type.IndexOf("מתח") != -1)
-                return Genre.Thriller;
-            if (type.IndexOf("דרמה") != -1)
-                return Genre.Drama;
-            if (type.IndexOf("אימה") != -1)
-                return Genre.Horror;
-            if (type.IndexOf("מדע בדיוני") != -1)
-                return Genre.SciFi;
-            if (type.IndexOf("מיוזיקל") != -1)
-                return Genre.Musical;
-            if (type.IndexOf("ילדים") != -1)
-                return Genre.Kids;
-            if (type.IndexOf("משפחה") != -1)
-                return Genre.Family;
-            return Genre.Unknown;
-        }
+            string res = "";
+            if (type.IndexOf("קומדיה") != -1||type.IndexOf("Comedy") != -1)
+                res+=",Comedy";
+            if (type.IndexOf("אקשן") != -1|| type.IndexOf("Action") != -1)
+                res += ",Action";
+            if (type.IndexOf("מותחן") != -1 || type.IndexOf("מתח") != -1|| type.IndexOf("Thriller")!= -1)
+                res += ",Thriller";
+            if (type.IndexOf("דרמה") != -1|| type.IndexOf("Drama")!=-1)
+                res += ",Drama";
+            if (type.IndexOf("אימה") != -1 || type.IndexOf("Horror") != -1)
+                res += ",Horror";
+            if (type.IndexOf("מדע בדיוני") != -1 || type.IndexOf("SciFi") != -1|| type.IndexOf("Science") != -1)
+                res += ",SciFi";
+            if (type.IndexOf("מיוזיקל") != -1||type.IndexOf("Musical") != -1)
+                res += ",Musical";
+            if (type.IndexOf("ילדים") != -1 || type.IndexOf("Kids") != -1)
+                res += "Kids";
+            if (type.IndexOf("משפחה") != -1 || type.IndexOf("Family") != -1)
+                res += ",Family";
+            if (type.IndexOf("פשע") != -1 || type.IndexOf("Crime") != -1)
+                res += ",Crime";
+            if (type.IndexOf("הרפתקאות") != -1 || type.IndexOf("Adventures") != -1)
+                res += ",Adventures";
+            if (type.IndexOf("אנימציה") != -1 || type.IndexOf("Animation") != -1)
+                res += ",Animation"; 
 
+            return res.Substring(1);
+        }
+        public string ParseGenreToString(List<Genre> genres)
+        {
+            string genreOfMovie = "";
+            for (int i = 0; i < genres.Count; i++)
+            {
+                genreOfMovie += ' ';
+                genreOfMovie += genres[i];
+            }
+            return genreOfMovie;
+        }
         public Rating parseMovieRating(string rating)
         {
             if (rating.IndexOf("13") != -1 || rating.IndexOf("12") != -1 || rating.IndexOf("14") != -1)

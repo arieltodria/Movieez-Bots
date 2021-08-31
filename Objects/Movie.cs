@@ -24,6 +24,7 @@ namespace Movieez
         public Movie() 
         {
             Urls = new Dictionary<string, string>();
+            //Genre = new List <Genre>();
             Genre = "";
         }
         public override string ToString()
@@ -44,6 +45,12 @@ public enum Genre
     Musical,
     Kids,
     Family,
+    Crime,
+    Adventures,
+    Animation,
+
+
+
     Unknown
 }
 

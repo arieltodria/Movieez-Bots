@@ -15,7 +15,7 @@ namespace Movieez
             Console.WriteLine("Hello World!");
             BotsManager bots = new BotsManager();
             bots.LaunchHotCinemaBot();
-            //bots.LaunchCinemaCityBot();
+          //  bots.LaunchCinemaCityBot();
             //bots.LaunchYesPlanetBot();
 
             //MyScheduler.IntervalInHours(9, 44, 1, bots.LaunchYesPlanetBot());
