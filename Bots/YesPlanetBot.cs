@@ -60,16 +60,18 @@ namespace Movieez
             wait();
             scrollToLoadAllElements();
             IWebElement loadMoreMoviesButton = getLoadMoreMoviesButton();
-            while(isLoadMoreMoviesButtonVisible())
+            while (isLoadMoreMoviesButtonVisible())
             {
                 wait();
                 try
                 {
                     Click(loadMoreMoviesButton, false, false);
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
                     logger.Error("Failed to click on loadMoreMoviesButton");
+                    logger.Error(e);
+                    saveDebugData();
                 }
             }
             logger.Debug("Loaded all movies in Yes Planet main page");
@@ -111,13 +113,22 @@ namespace Movieez
             initMoviesElementsLists();
             totalMovies = allMoviesElements.Count;
             logger.Debug($"Total movies to parse: {totalMovies}");
-            for (int counter=0; counter < totalMovies; counter++)
+            for (int counter = 0; counter < totalMovies; counter++)
             {
                 Movie movie = new Movie();
-                movie.Urls.Add("YesPlanet", parseMovieUrl(allMoviesElements.ToList().ElementAt(counter)));
-                parseMovieMetadata(allMoviesElements.ToList().ElementAt(counter), movie);
-                // init movies list in new loaded home page
-                initMoviesElementsLists();
+                try
+                {
+                    movie.Urls.Add("YesPlanet", parseMovieUrl(allMoviesElements.ToList().ElementAt(counter)));
+                    parseMovieMetadata(allMoviesElements.ToList().ElementAt(counter), movie);
+                    // init movies list in new loaded home page
+                    initMoviesElementsLists();
+                }
+                catch (Exception e)
+                {
+                    logger.Error("Failed to click on current movie");
+                    logger.Error(e);
+                    saveDebugData();
+                }
             }
         }
 
@@ -146,7 +157,7 @@ namespace Movieez
             int original_language_index = 5;
             int rating_index = 6;
             movie.EnglishName = innerMetadataContainer.ToList()[english_name_index].GetAttribute("innerText");
-            movie.Genre = innerMetadataContainer.ToList()[genre_index].GetAttribute("innerText");
+            movie.Genre = parseMovieGenre(innerMetadataContainer.ToList()[genre_index].GetAttribute("innerText"));
             movie.Cast = innerMetadataContainer.ToList()[cast_index].GetAttribute("innerText");
             movie.Director = innerMetadataContainer.ToList()[director_index].GetAttribute("innerText");
             movie.OriginalLanguage = innerMetadataContainer.ToList()[original_language_index].GetAttribute("innerText");
@@ -266,43 +277,52 @@ namespace Movieez
             {
                 Click(theaterFilterBoxElement, true, true); // Click on theater filter box
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 logger.Error("Failed to click on theaterFilterBoxElement");
+                logger.Error(e);
+                saveDebugData();
                 return;
             }
             theaterFilterBoxListElements = getTheaterFilterBoxListElements();
             int tCount = theaterFilterBoxListElements.Count;
-            for (int i=0; i< tCount; i++)
+            for (int i = 0; i < tCount; i++)
             {
                 logger.Debug($"Parsing new theater #{teaterCount++}");
                 try
                 {
                     Click(theaterFilterBoxListElements.ToList()[i], true, true); // Filter by theater
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
                     logger.Error("Failed to click on theaterFilterBoxListElements");
+                    logger.Error(e);
+                    saveDebugData();
+                    break;
                 }
                 try
                 {
                     Click(screeningTypeFilterBoxElement, true, true); // Click on screening filter box
                 }
-                catch
+                catch (Exception e)
                 {
                     logger.Error("Failed to click on screeningTypeFilterBoxElement");
+                    logger.Error(e);
+                    saveDebugData();
                     break;
                 }
                 allScreeningTypesButton = getAllScreeningTypesButton();
-                if (i==0)
+                if (i == 0)
                 {
                     try
                     {
                         Click(allScreeningTypesButton, true, true); // Filter by all screening types 
                     }
-                    catch
+                    catch (Exception e)
                     {
                         logger.Error("Failed to click on allScreeningTypesButton");
+                        logger.Error(e);
+                        saveDebugData();
                         break;
                     }
                 }
@@ -316,9 +336,11 @@ namespace Movieez
                 {
                     Click(dayFilterButton, true, true); // Filter by specific day
                 }
-                catch
+                catch (Exception e)
                 {
                     logger.Error("Failed to click on dayFilterButton");
+                    logger.Error(e);
+                    saveDebugData();
                     break;
                 }
                 logger.Debug("Parsing new day #" + (dayCount++)); // Debug
@@ -360,9 +382,10 @@ namespace Movieez
                 {
                     Click(theaterFilterBoxElement, true, true); // Click on theater filter box
                 }
-                catch
+                catch (Exception e)
                 {
                     logger.Error("Failed to click on theaterFilterBoxElement");
+                    logger.Error(e);
                     return;
                 }
                 theaterFilterBoxListElements = getTheaterFilterBoxListElements();
@@ -411,7 +434,8 @@ namespace Movieez
         {
             logger.Debug("Parsing theater from screenings");
             Theater theater = new Theater();
-            theater.Name = FindElementByDriver(By.ClassName(YesPlanet_QueryStrings.theaterName)).GetAttribute("innerText");
+            theater.Location = FindElementByDriver(By.ClassName(YesPlanet_QueryStrings.theaterName)).GetAttribute("innerText");
+            theater.Name = Name;
             theater.Address = FindElementByDriver(By.CssSelector(YesPlanet_QueryStrings.theaterAddress)).GetAttribute("innerText");
             return theater;
         }

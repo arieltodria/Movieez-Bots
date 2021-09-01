@@ -74,23 +74,29 @@ namespace Movieez.Bots
 
         public async Task<API.Model.Models.Movie> GetMovie(Movie movie)
         {
-            string nameForSearch;
             API.Model.Models.Movie fetchedMovieObject = null;
+            //HttpResponseMessage getMovieResponseEnglish = _client.GetAsync($"api/Movies/{movie.EnglishName}").Result;
+            //HttpResponseMessage getMovieResponseHebrew = _client.GetAsync($"api/Movies/{movie.Name}").Result;
             if (movie.EnglishName != null)
             {
-                nameForSearch = movie.EnglishName;
+                HttpResponseMessage getMovieResponseEnglish = _client.GetAsync($"api/Movies/{movie.EnglishName}").Result;
+                if (getMovieResponseEnglish.StatusCode == System.Net.HttpStatusCode.OK)
+                {
+                    var responseContent = await getMovieResponseEnglish.Content.ReadAsStringAsync();
+                    fetchedMovieObject = Newtonsoft.Json.JsonConvert.DeserializeObject<API.Model.Models.Movie>(responseContent);
+                    return fetchedMovieObject;
+                }
             }
-            else
+            if(movie.Name != null)
             {
-                nameForSearch = movie.Name;
+                HttpResponseMessage getMovieResponseHebrew = _client.GetAsync($"api/Movies/{movie.Name}").Result;
+                if (getMovieResponseHebrew.StatusCode == System.Net.HttpStatusCode.OK)
+                {
+                    var responseContent = await getMovieResponseHebrew.Content.ReadAsStringAsync();
+                    fetchedMovieObject = Newtonsoft.Json.JsonConvert.DeserializeObject<API.Model.Models.Movie>(responseContent);
+                    return fetchedMovieObject;
+                }
             }
-            HttpResponseMessage getMovieResponse = _client.GetAsync($"api/Movies/{nameForSearch}").Result;
-            if (getMovieResponse.StatusCode == System.Net.HttpStatusCode.OK)
-            {
-                var responseContent = await getMovieResponse.Content.ReadAsStringAsync();
-                fetchedMovieObject = Newtonsoft.Json.JsonConvert.DeserializeObject<API.Model.Models.Movie>(responseContent);
-            }
-
             return fetchedMovieObject;
         }
 
@@ -115,7 +121,7 @@ namespace Movieez.Bots
                 Name = movie.Name,
                 EnglishName = movie.EnglishName,
                 Plot = movie.Plot,
-               // OriginalLanguage = movie.OriginalLanguage,
+                OriginalLanguage = movie.OriginalLanguage,
                 Duration = int.Parse(movie.Duration),
                 Genre = movie.Genre,
                 Cast = movie.Cast,
@@ -135,9 +141,10 @@ namespace Movieez.Bots
             {
                 TheaterId = (int)_theater,
                 TheaterName = showTime.Theater.Name,
-                TheaterLocation = showTime.Theater.Address,
+                TheaterLocation = showTime.Theater.Location,
+                TheaterAddress = showTime.Theater.Address,
                 MovieName = showTime.Movie.Name,
-                //MovieUrl = showTime.MovieUrl,
+                MovieUrl = showTime.MovieUrl,
                 Day = showTime.Time.ToString("dd/MM/yyyy"),
                 Time = showTime.Time.ToString("HH:mm"),
                 Type = showTime.Type,

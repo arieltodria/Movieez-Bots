@@ -17,15 +17,15 @@ namespace Movieez
         public string OriginalLanguage { get; set; }
         public string TrailerUrl { get; set; }
         public string Duration { get; set; }
-        public string Genre {get; set; }
-        public string Rating {get; set; }
+        public string Genre { get; set; }
+        public string Rating { get; set; }
         public string Cast { get; set; }
         public string Director { get; set; }
         public string PosterImage { get; set; }
         public string MainImage { get; set; }
         public DateTime ReleaseDate { get; set; }
 
-        public Movie() 
+        public Movie()
         {
             Urls = new Dictionary<string, string>();
             Genre = "";
@@ -33,6 +33,18 @@ namespace Movieez
         public override string ToString()
         {
             return $"Name={Name} EnglishName={EnglishName} Plot={Plot} OriginalLanguage={OriginalLanguage} Trailer_link={TrailerUrl} Duration={Duration} Genre={Genre} Rating={Rating} Cast={Cast} Director={Director} PosterImage={PosterImage} MainImage={MainImage} ReleaseDate={ReleaseDate}";
+        }
+        public static bool operator ==(Movie m1, Movie m2)
+        {
+            bool englishEqual = (m1.EnglishName == m2.EnglishName);
+            bool hebrewEqual = (m1.Name == m2.Name);
+            return englishEqual || hebrewEqual;
+        }
+        public static bool operator !=(Movie m1, Movie m2)
+        {
+            bool englishEqual = (m1.EnglishName != m2.EnglishName);
+            bool hebrewEqual = (m1.Name != m2.Name);
+            return englishEqual && hebrewEqual;
         }
     }
 }

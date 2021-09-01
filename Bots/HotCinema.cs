@@ -137,7 +137,7 @@ namespace Movieez
                     for (int z = 0; z < newTimes.Count; z++)
                     {
                         string timeOfMovie = newTimes.ToList()[z].GetAttribute("innerHTML").ToString().Trim();
-                        Theater theaterForScreening = new Theater(theater.Name, theater.Address);
+                        Theater theaterForScreening = new Theater(Name, theater.Address, theater.Name);
                         DateTime time = parseMovieTime(timeOfMovie);
                         Showtime screening = new Showtime(MoviesList[k], time, theaterForScreening, moviesUrlList[k], type, language);
                         ScreeningsList.Add(screening);
@@ -279,7 +279,7 @@ namespace Movieez
         {
             var nameOfMovie = FindElementsByDriver(By.XPath("/html/body/div[2]/div[4]/div[2]/div[1]/div[1]/div[2]/div[2]/div[1]/div[1]/h1"));
             string nameString = nameOfMovie.ToList()[0].GetAttribute("innerHTML").ToString();
-            movie.Name = nameString;
+            movie.Name = fixMovieName(nameString);
         }
 
         void AddPlotOfMovie(Movie movie)
@@ -315,7 +315,7 @@ namespace Movieez
                     {
                         goToUrl(TheatersUrlList[i]);
                         var theatherName = driver.FindElements(By.XPath("/html/body/div[2]/div[4]/div[1]/div/div/div/div[2]/h1"));
-                        string nameOFtheaterName = theatherName[i].GetAttribute("innerHTML").ToString().Trim();
+                        string nameOFtheaterName = theatherName[0].GetAttribute("innerHTML").ToString().Trim();
 
                         var elem = FindElementsByDriver(By.XPath("/html/body/div[2]/div[4]/div[2]/div/div[4]/div[2]/div"));
                         string theatherAdress = elem.ToList()[0].GetAttribute("innerText").ToString().Trim();

@@ -13,7 +13,6 @@ namespace Movieez
         {
             init();
             BotsManager bots = new BotsManager();
-
             //MyScheduler.IntervalInHours(9, 44, 1, bots.LaunchYesPlanetBot());
         }
 

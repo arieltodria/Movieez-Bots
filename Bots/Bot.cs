@@ -185,7 +185,7 @@ namespace Movieez
             if (type.IndexOf("מיוזיקל") != -1 || type.IndexOf("Musical") != -1)
                 res += ",Musical";
             if (type.IndexOf("ילדים") != -1 || type.IndexOf("Kids") != -1)
-                res += "Kids";
+                res += ",Kids";
             if (type.IndexOf("משפחה") != -1 || type.IndexOf("Family") != -1)
                 res += ",Family";
             if (type.IndexOf("פשע") != -1 || type.IndexOf("Crime") != -1)
@@ -194,8 +194,10 @@ namespace Movieez
                 res += ",Adventures";
             if (type.IndexOf("אנימציה") != -1 || type.IndexOf("Animation") != -1)
                 res += ",Animation";
-
-            return res.Substring(1);
+            
+            if (res.Length > 1)
+                return res.Substring(1);
+            return "";
         }
         public string ParseGenreToString(List<Genre> genres)
         {
@@ -223,12 +225,12 @@ namespace Movieez
         public string fixMovieName(string name)
         {
             logger.Debug("Fixing movie's hebrew name");
-            string[] stringsToRemove = { "עברית עם כתוביות", "עברית", "אנגלית"};
+            string[] stringsToRemove = { "עברית עם כתוביות", "עברית", "אנגלית" };
             foreach (string str in stringsToRemove)
             {
                 if (name.Contains(str))
                 {
-                    name.Remove(name.IndexOf(str));
+                    name = name.Remove(name.IndexOf(str));
                 }
             }
             return name;
@@ -281,7 +283,7 @@ namespace Movieez
                 var pageSource = driver.PageSource;
                 File.WriteAllText(debugDataPath + $"pageSource_{timestamp}.txt", pageSource);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 logger.Error(e);
             }

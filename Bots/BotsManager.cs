@@ -1,12 +1,6 @@
 ﻿using NUnit.Framework;
-using OpenQA.Selenium;
-using OpenQA.Selenium.Chrome;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+using System.Threading;
 
 namespace Movieez
 {
@@ -27,11 +21,22 @@ namespace Movieez
 
         public void run()
         {
-            logger.Info("Running BotsManager");
-            //LaunchYesPlanetBot();
-            //LaunchCinemaCityBot();
-            // LaunchHotCinemaBot();
-            LanchLevBot();
+            System.Threading.Tasks.Task task;
+            System.Action[] bots = { LaunchCinemaCityBot, LaunchHotCinemaBot, LaunchYesPlanetBot };
+            while (true)
+            {
+                foreach (System.Action bot in bots)
+                {
+                    logger.Info("Running bot");
+                    task = new System.Threading.Tasks.Task(bot);
+                    task.RunSynchronously();
+                    logger.Info("Finished running bot ");
+                }
+                // Run bots every 8 hours
+                logger.Info("Going to sleep.....");
+                Thread.Sleep(new TimeSpan(8, 0, 0));
+                logger.Info("Waking up from sleep.....");
+            }
         }
 
         [Test]
@@ -46,6 +51,7 @@ namespace Movieez
             LevBot lev = new LevBot();
             lev.run();
         }
+
         [Test]
         public void LaunchCinemaCityBot()
         {

@@ -10,12 +10,14 @@ namespace Movieez
     {
         public string Name { get; set; }
         public string Address { get; set; }
+        public string Location { get; set; }
         public Theater() { }
 
-        public Theater(string name, string address = "")
+        public Theater(string name, string address = "", string location = "")
         {
             Name = name;
             Address = address;
+            Location = location;
         }
     }
 }

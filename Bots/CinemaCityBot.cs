@@ -248,7 +248,7 @@ namespace Movieez
             {
                 screening.Movie = movie;
                 screening.MovieUrl = movie.Urls[Name];
-                screening.Theater = new Theater(parseScreeningLocation(theater.GetAttribute("innerText")), "");
+                screening.Theater = new Theater(Name, "", parseScreeningLocation(theater.GetAttribute("innerText")));
                 screening.Time = DateTime.Parse(date.GetAttribute("innerText") + " " + time.GetAttribute("innerText"));
                 screening.Type = parseScreeningType(theater.GetAttribute("innerText"));
                 logger.Debug("New screening added " + screening.Time);
