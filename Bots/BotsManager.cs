@@ -30,7 +30,8 @@ namespace Movieez
             logger.Info("Running BotsManager");
             //LaunchYesPlanetBot();
             //LaunchCinemaCityBot();
-            LaunchHotCinemaBot();
+            // LaunchHotCinemaBot();
+            LanchLevBot();
         }
 
         [Test]
@@ -40,7 +41,11 @@ namespace Movieez
             YesPlanetBot yesPlanet = new YesPlanetBot();
             yesPlanet.run();
         }
-
+        public void LanchLevBot()
+        {
+            LevBot lev = new LevBot();
+            lev.run();
+        }
         [Test]
         public void LaunchCinemaCityBot()
         {
