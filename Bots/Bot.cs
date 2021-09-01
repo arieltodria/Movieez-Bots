@@ -196,8 +196,6 @@ namespace Movieez
                 res += ",אנימציה";
             if (type.IndexOf("ישראלי") != -1 || type.IndexOf("Israeli") != -1)
                 res += ",ישראלי";
-            if (type.IndexOf("אנימציה") != -1 || type.IndexOf("Animation") != -1)
-                res += ",אנימציה";
 
             if (res.Length > 1)
                 return res.Substring(1);
