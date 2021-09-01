@@ -171,30 +171,34 @@ namespace Movieez
         {
             string res = "";
             if (type.IndexOf("קומדיה") != -1 || type.IndexOf("Comedy") != -1)
-                res += ",Comedy";
+                res += ",קומדיה";
             if (type.IndexOf("אקשן") != -1 || type.IndexOf("Action") != -1)
-                res += ",Action";
+                res += ",אקשן";
             if (type.IndexOf("מותחן") != -1 || type.IndexOf("מתח") != -1 || type.IndexOf("Thriller") != -1)
-                res += ",Thriller";
+                res += ",מתח";
             if (type.IndexOf("דרמה") != -1 || type.IndexOf("Drama") != -1)
-                res += ",Drama";
+                res += ",דרמה";
             if (type.IndexOf("אימה") != -1 || type.IndexOf("Horror") != -1)
-                res += ",Horror";
+                res += ",אימה";
             if (type.IndexOf("מדע בדיוני") != -1 || type.IndexOf("SciFi") != -1 || type.IndexOf("Science") != -1)
-                res += ",SciFi";
+                res += ",מדע בדיוני";
             if (type.IndexOf("מיוזיקל") != -1 || type.IndexOf("Musical") != -1)
-                res += ",Musical";
+                res += ",מיוזיקל";
             if (type.IndexOf("ילדים") != -1 || type.IndexOf("Kids") != -1)
-                res += ",Kids";
+                res += ",ילדים";
             if (type.IndexOf("משפחה") != -1 || type.IndexOf("Family") != -1)
-                res += ",Family";
+                res += ",משפחה";
             if (type.IndexOf("פשע") != -1 || type.IndexOf("Crime") != -1)
-                res += ",Crime";
+                res += ",פשע";
             if (type.IndexOf("הרפתקאות") != -1 || type.IndexOf("Adventures") != -1)
-                res += ",Adventures";
+                res += ",הרפתקאות";
             if (type.IndexOf("אנימציה") != -1 || type.IndexOf("Animation") != -1)
-                res += ",Animation";
-            
+                res += ",אנימציה";
+            if (type.IndexOf("ישראלי") != -1 || type.IndexOf("Israeli") != -1)
+                res += ",ישראלי";
+            if (type.IndexOf("אנימציה") != -1 || type.IndexOf("Animation") != -1)
+                res += ",אנימציה";
+
             if (res.Length > 1)
                 return res.Substring(1);
             return "";
@@ -225,7 +229,7 @@ namespace Movieez
         public string fixMovieName(string name)
         {
             logger.Debug("Fixing movie's hebrew name");
-            string[] stringsToRemove = { "עברית עם כתוביות", "עברית", "אנגלית" };
+            string[] stringsToRemove = { "מדובב לרוסית", "עברית עם כתוביות", "עברית", "אנגלית" };
             foreach (string str in stringsToRemove)
             {
                 if (name.Contains(str))
