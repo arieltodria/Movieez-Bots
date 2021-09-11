@@ -17,7 +17,7 @@
 
   <ItemGroup>
     <Reference Include="Movieez.API.Model">
-      <HintPath>..\Movieez-Backend\Movieez.API.Model\bin\Debug\netcoreapp3.1\Movieez.API.Model.dll</HintPath>
+      <HintPath>..\Movieez-Backend\Movieez.API\bin\Debug\netcoreapp3.1\Movieez.API.Model.dll</HintPath>
     </Reference>
   </ItemGroup>
 

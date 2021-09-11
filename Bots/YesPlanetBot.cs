@@ -112,7 +112,7 @@ namespace Movieez
             initMoviesElementsLists();
             totalMovies = allMoviesElements.Count;
             logger.Debug($"Total movies to parse: {totalMovies}");
-            for (int counter = 7; counter < totalMovies; counter++)
+            for (int counter = 0; counter < totalMovies; counter++)
             {
                 Movie movie = new Movie();
                 try
@@ -302,6 +302,8 @@ namespace Movieez
                     saveDebugData();
                     break;
                 }
+                allScreeningTypesButton = getAllScreeningTypesButton();
+                daysFilterButtons = getDaysFilterButtons();
                 try
                 {
                     Click(screeningTypeFilterBoxElement, true, true); // Click on screening filter box
@@ -313,88 +315,115 @@ namespace Movieez
                     saveDebugData();
                     break;
                 }
-                allScreeningTypesButton = getAllScreeningTypesButton();
-                if (i == 0)
+                for (int j = 0; j < daysFilterButtons.Count; j++)
                 {
                     try
                     {
-                        Click(allScreeningTypesButton, true, true); // Filter by all screening types 
+                        Click(daysFilterButtons.ToList()[j]);
+                        logger.Debug("Clicking on day " + (j+1));
                     }
                     catch (Exception e)
                     {
-                        logger.Error("Failed to click on allScreeningTypesButton");
+                        logger.Error("Failed to click on daysFilterButtons");
                         logger.Error(e);
                         saveDebugData();
                         break;
                     }
-                }
-                daysFilterButtons = getDaysFilterButtons();
-                int dayCount = 1; // debug
-                // Filter only today's screenings
-                if (daysFilterButtons == null)
-                    break;
-                IWebElement dayFilterButton = daysFilterButtons.ToList()[0];
-                try
-                {
-                    Click(dayFilterButton, true, true); // Filter by specific day
-                }
-                catch (Exception e)
-                {
-                    logger.Error("Failed to click on dayFilterButton");
-                    logger.Error(e);
-                    saveDebugData();
-                    break;
-                }
-                logger.Debug("Parsing new day #" + (dayCount++)); // Debug
-                if (isMoviePlaying(movie))
-                {
-                    Theater theater = parseTheaterFromScreenings();
-                    Showtime screening = new Showtime(movie, theater);
 
-                    screeningTimeInfoContainer = getScreeningContainer(); // Screening containers ordered by screening type
-                    foreach (IWebElement screeningTimeInfo in screeningTimeInfoContainer)
+                   
+
+
+                    //if (i == 0)
+                    //{
+                    //    try
+                    //    {
+                    //        Click(allScreeningTypesButton, true, true); // Filter by all screening types 
+                    //        logger.Debug("Parsing new day #" + (j+1)); // Debug
+                    //    }
+                    //    catch (Exception e)
+                    //    {
+                    //        logger.Error("Failed to click on allScreeningTypesButton");
+                    //        logger.Error(e);
+                    //        saveDebugData();
+                    //        break;
+                    //    }
+                    //}
+
+                    //daysFilterButtons = getDaysFilterButtons();
+                    //int dayCount = 1; // debug
+                    //                  // Filter only today's screenings
+                    //if (daysFilterButtons == null)
+                    //    break;
+                    //IWebElement dayFilterButton = daysFilterButtons.ToList()[0];
+                    //try
+                    //{
+                    //    Click(dayFilterButton, true, true); // Filter by specific day
+                    //}
+                    //catch (Exception e)
+                    //{
+                    //    logger.Error("Failed to click on dayFilterButton");
+                    //    logger.Error(e);
+                    //    saveDebugData();
+                    //    break;
+                    //}
+                    
+                    if (isMoviePlaying(movie))
                     {
-                        screening.MovieUrl = movie.Urls[Name];
-                        screening.Type = parseScreeningType(screeningTimeInfo);
-                        screening.Language = parseScreeningLanguage(screeningTimeInfo);
-                        screeningTimes = getScreeningTimesElements(screeningTimeInfo);
-                        foreach (IWebElement time in screeningTimes)
+                        Theater theater = parseTheaterFromScreenings();
+                        Showtime screening = new Showtime(movie, theater);
+
+                        screeningTimeInfoContainer = getScreeningContainer(); // Screening containers ordered by screening type
+                        foreach (IWebElement screeningTimeInfo in screeningTimeInfoContainer)
                         {
-                            screening.Time = parseScreeningTime(time);
-                            ScreeningsList.Add(screening);
-                            if (movieFromApi != null)
+                            screening.MovieUrl = movie.Urls[Name];
+                            screening.Type = parseScreeningType(screeningTimeInfo);
+                            screening.Language = parseScreeningLanguage(screeningTimeInfo);
+                            screeningTimes = getScreeningTimesElements(screeningTimeInfo);
+                            foreach (IWebElement time in screeningTimes)
                             {
-                                var showTimeExists = showTimesFromApi.Any(st =>
-                                st.Day == screening.Time.ToString("dd/MM/yyyy") &&
-                                st.Time == screening.Time.ToString("HH:mm"));
-                                if (!showTimeExists)
+                                screening.Time = parseScreeningTime(time);
+                                //screening.Time.AddDays(j);
+                                ScreeningsList.Add(screening);
+
+                                if (movieFromApi != null)
                                 {
-                                    _movieezApiUtils.PostShowTime(screening, movieFromApi.ID);
+                                    var showTimeExists = showTimesFromApi.Any(st =>
+                                    st.Day == screening.Time.ToString("dd/MM/yyyy") &&
+                                    st.Time == screening.Time.ToString("HH:mm"));
+                                    if (!showTimeExists)
+                                    {
+                                        _movieezApiUtils.PostShowTime(screening, movieFromApi.ID);
+                                    }
                                 }
                             }
-
-                            logger.Debug("Added new screening, time=" + screening.Time); // Debug
                         }
                     }
                 }
-                else
-                    logger.Error("Movie screening is missing on this day");
 
-                try
-                {
-                    Click(theaterFilterBoxElement, true, true); // Click on theater filter box
-                }
-                catch (Exception e)
-                {
-                    logger.Error("Failed to click on theaterFilterBoxElement");
-                    logger.Error(e);
-                    return;
-                }
-                theaterFilterBoxListElements = getTheaterFilterBoxListElements();
             }
-            logger.Debug("Total screenings in list: " + ScreeningsList.Count);
-        }
+                //                logger.Debug("Added new screening, time=" + screening.Time); // Debug
+                //            }
+                //        }
+                //    }
+                //    else
+                //        logger.Error("Movie screening is missing on this day");
 
+                //    try
+                //    {
+                //        Click(theaterFilterBoxElement, true, true); // Click on theater filter box
+                //    }
+                //    catch (Exception e)
+                //    {
+                //        logger.Error("Failed to click on theaterFilterBoxElement");
+                //        logger.Error(e);
+                //        return;
+                //    }
+                //    theaterFilterBoxListElements = getTheaterFilterBoxListElements();
+                //}
+                //logger.Debug("Total screenings in list: " + ScreeningsList.Count);
+            }
+        
+    //    }
         // returns true if movie is playing in current selected day, theater and type
         bool isMoviePlaying(Movie movie)
         {
