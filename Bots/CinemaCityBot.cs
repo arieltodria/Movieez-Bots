@@ -28,12 +28,10 @@ namespace Movieez
 
         public CinemaCityBot()
         {
-
-            initDriver(MainUrl);
             MoviesList = new List<Movie>();
             TheatersList = new List<Theater>();
             ScreeningsList = new List<Showtime>();
-            _movieezApiUtils = new MovieezApiUtils(MovieezApiUtils.e_Theaters.CinemaCity);
+            initDriver(MainUrl);
         }
 
         public void run()
@@ -50,9 +48,18 @@ namespace Movieez
             int totalMoviesToParse = movies.Count;
             for(int i = 0; i < totalMoviesToParse; i++)
             {
-                initMoviesElements();
-                Movie movie = parseMovie(movies.ToList()[i]);
-                logger.Debug(movie.ToString());
+                try
+                {
+                    initMoviesElements();
+                    Movie movie = parseMovie(movies.ToList()[i]);
+                    logger.Debug("Parsed movie: " + movie.ToString());
+                }
+                catch (Exception e)
+                {
+                    logger.Error("Failed to parse current movie");
+                    logger.Error(e);
+                    goToUrl(MainUrl); // Back to main
+                }
                 this.loadAllMovies();
             }
         }
@@ -154,7 +161,8 @@ namespace Movieez
                             {
                                 var showTimeExists = showTimesFromApi.Any(st =>
                                 st.Day == screening.Time.ToString("dd/MM/yyyy") &&
-                                st.Time == screening.Time.ToString("hh:mm"));
+                                st.Time == screening.Time.ToString("HH:mm")
+                                );
                                 if (!showTimeExists)
                                 {
                                     _movieezApiUtils.PostShowTime(screening, movieFromApi.ID);
@@ -232,6 +240,13 @@ namespace Movieez
             logger.Debug("Finding day element of 1st day");
             // returns 1st day from days list
             return FindElementsByFather(By.CssSelector(CinemaCity_QueryStrings.dateBoxSearchList), initDateSearchBoxList()).ToList()[0];
+        }
+
+        IReadOnlyCollection<IWebElement> getDatesElements()
+        {
+            logger.Debug("Finding day elementsy");
+            // returns 1st day from days list
+            return FindElementsByFather(By.CssSelector(CinemaCity_QueryStrings.dateBoxSearchList), initDateSearchBoxList());
         }
 
         IReadOnlyCollection<IWebElement> initScreeningTimes()
@@ -382,7 +397,7 @@ namespace Movieez
             }
             wait();
             logger.Debug("Finding closeBotButton element");
-            IWebElement closeBotButton = FindElementByDriver(By.Id("lblCloseChat")).FindElement(By.CssSelector("span span a"));
+            IWebElement closeBotButton = FindElementByFather(By.CssSelector("span span a"), FindElementByDriver(By.Id("lblCloseChat")));
             try
             {
                 Click(closeBotButton, false, true);

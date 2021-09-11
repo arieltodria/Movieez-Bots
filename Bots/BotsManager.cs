@@ -22,7 +22,7 @@ namespace Movieez
         public void run()
         {
             System.Threading.Tasks.Task task;
-            System.Action[] bots = { LaunchYesPlanetBot, LaunchHotCinemaBot, LaunchCinemaCityBot };
+            System.Action[] bots = { LaunchYesPlanetBot, LaunchCinemaCityBot, LaunchHotCinemaBot };
             while (true)
             {
                 foreach (System.Action bot in bots)

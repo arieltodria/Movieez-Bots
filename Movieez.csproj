@@ -27,6 +27,11 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>CinemaCity_QueryStrings.resx</DependentUpon>
     </Compile>
+    <Compile Update="Resources\HotCinema_QueryStrings.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>HotCinema_QueryStrings.resx</DependentUpon>
+    </Compile>
     <Compile Update="Resources\YesPlanet_QueryStrings.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -38,6 +43,10 @@
     <EmbeddedResource Update="Resources\CinemaCity_QueryStrings.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>CinemaCity_QueryStrings.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resources\HotCinema_QueryStrings.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>HotCinema_QueryStrings.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Update="Resources\YesPlanet_QueryStrings.resx">
       <Generator>ResXFileCodeGenerator</Generator>

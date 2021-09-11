@@ -23,6 +23,10 @@ namespace Movieez
         public static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
         string debugDataPath = AppDomain.CurrentDomain.BaseDirectory + $"movieezLogs\\Data\\";
 
+        public Bot()
+        {
+            _movieezApiUtils = new MovieezApiUtils(MovieezApiUtils.e_Theaters.CinemaCity);
+        }
         public void initDriver(string botUrl)
         {
             logger.Debug("Initializing driver");
@@ -172,7 +176,7 @@ namespace Movieez
             string res = "";
             if (type.IndexOf("קומדיה") != -1 || type.IndexOf("Comedy") != -1)
                 res += ",קומדיה";
-            if (type.IndexOf("אקשן") != -1 || type.IndexOf("Action") != -1)
+            if (type.IndexOf("אקשן") != -1 || type.IndexOf("Action") != -1 || type.IndexOf("פעולה") != -1)
                 res += ",אקשן";
             if (type.IndexOf("מותחן") != -1 || type.IndexOf("מתח") != -1 || type.IndexOf("Thriller") != -1)
                 res += ",מתח";
@@ -199,7 +203,7 @@ namespace Movieez
 
             if (res.Length > 1)
                 return res.Substring(1);
-            return "";
+            return "אחר";
         }
         public string ParseGenreToString(List<Genre> genres)
         {
@@ -226,15 +230,23 @@ namespace Movieez
 
         public string fixMovieName(string name)
         {
-            logger.Debug("Fixing movie's hebrew name");
-            string[] stringsToRemove = { "מדובב לרוסית", "עברית עם כתוביות", "עברית", "אנגלית" };
+            logger.Debug("Fixing movie's name");
+            string[] stringsToRemove = { "מדובב לרוסית", "עברית עם כתוביות", "סרט ברוסית", "סרט בערבית", 
+                                        "סרט באנגלית", "סרט בעברית", "סרט בצרפתית", "מדובב", "עברית", "אנגלית", 
+                                        "רוסית", "צרפתית", "ערבית", "dubbed" };
             foreach (string str in stringsToRemove)
             {
                 if (name.Contains(str))
-                {
                     name = name.Remove(name.IndexOf(str));
-                }
             }
+            //string[] charsToRemovie = {"-", ":" };
+            //Regex re = new Regex(@"(\-[^-]*$|\:[^:]*$)");
+            //foreach (string ch in charsToRemovie)
+            //{
+            //    Match m = re.Match(name);
+            //    if (m.Success)
+            //        name = Regex.Replace(name, @"(\-[^-]*$|\:[^:]*$)", "");
+            //}
             return name;
         }
 

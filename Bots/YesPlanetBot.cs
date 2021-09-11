@@ -31,17 +31,16 @@ namespace Movieez
 
         public YesPlanetBot()
         {
-            initDriver(MainUrl);
             MoviesList = new List<Movie>();
             TheatersList = new List<Theater>();
             ScreeningsList = new List<Showtime>();
-            _movieezApiUtils = new MovieezApiUtils(MovieezApiUtils.e_Theaters.YesPlanet);
+            initDriver(MainUrl);
         }
 
         public void run()
         {
             logger.Debug("Running Yes Planet bot");
-            this.parseAllMovies();
+            parseAllMovies();
             printResults();
             closeBrowser();
         }
@@ -113,7 +112,7 @@ namespace Movieez
             initMoviesElementsLists();
             totalMovies = allMoviesElements.Count;
             logger.Debug($"Total movies to parse: {totalMovies}");
-            for (int counter = 0; counter < totalMovies; counter++)
+            for (int counter = 7; counter < totalMovies; counter++)
             {
                 Movie movie = new Movie();
                 try
@@ -125,6 +124,7 @@ namespace Movieez
                 }
                 catch (Exception e)
                 {
+                    goToUrl(MainUrl);
                     logger.Error("Failed to click on current movie");
                     logger.Error(e);
                     saveDebugData();
@@ -186,9 +186,11 @@ namespace Movieez
 
         string parseMoviePoster()
         {
+            logger.Debug("Parsing movie's poster image");
             IWebElement posterElment = FindElementByDriver(By.CssSelector(YesPlanet_QueryStrings.PosterImage), true);
+            goToElement(posterElment);
             var poster = posterElment.GetAttribute("src");
-            if (poster.Contains("film.placeholder.poster.jpg"))
+            if (!poster.Contains(".jpg") || poster.Contains("film.placeholder.poster.jpg"))
                 return null;
             return poster;
         }
@@ -364,7 +366,7 @@ namespace Movieez
                             {
                                 var showTimeExists = showTimesFromApi.Any(st =>
                                 st.Day == screening.Time.ToString("dd/MM/yyyy") &&
-                                st.Time == screening.Time.ToString("hh:mm"));
+                                st.Time == screening.Time.ToString("HH:mm"));
                                 if (!showTimeExists)
                                 {
                                     _movieezApiUtils.PostShowTime(screening, movieFromApi.ID);

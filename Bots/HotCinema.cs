@@ -3,6 +3,7 @@ using OpenQA.Selenium;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Movieez.Resources;
 
 namespace Movieez
 {
@@ -14,18 +15,17 @@ namespace Movieez
         public List<Theater> TheatersList;
         public List<Showtime> ScreeningsList;
         public List<string> moviesUrlList;
-		public List<string> TheatersUrlList;
+        public List<string> TheatersUrlList;
         // Logger
         public static new NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
         public HotCinema()
         {
-            initDriver(MainUrl);
             MoviesList = new List<Movie>();
             TheatersList = new List<Theater>();
             ScreeningsList = new List<Showtime>();
             moviesUrlList = new List<string>();
-            _movieezApiUtils = new MovieezApiUtils(MovieezApiUtils.e_Theaters.HotCinema);
             TheatersUrlList = new List<string>();
+            initDriver(MainUrl);
         }
         public void run()
         {
@@ -45,7 +45,7 @@ namespace Movieez
         {
             try
             {
-                var elem2 = FindElementsByDriver(By.XPath("/html/body/div[2]/div[1]/div/div/div[1]/div[3]/div[1]/div[2]/div[2]"));
+                var elem2 = FindElementsByDriver(By.XPath(HotCinema_QueryStrings.ParseAllMovies_elem2));
                 var movies = FindElementsByFather(By.XPath(".//*"), elem2.ToList()[0]);
                 for (int i = 0; i < movies.Count; i++)
                 {
@@ -121,10 +121,6 @@ namespace Movieez
             var elem = FindElementsByFather(By.CssSelector("td"), Screenings);
             string nameOfMovieToday = elem.ToList()[0].GetAttribute("innerHTML").ToString().Trim();
             string language = elem.ToList()[1].GetAttribute("innerHTML").ToString().Trim();
-            if (language.IndexOf("מדובב") != -1)
-                language = "עברית";
-            else
-                language = "שפת המקור עם כתוביות";
             string type = elem.ToList()[2].GetAttribute("innerHTML").ToString().Trim();
             if (type == "<!---->")
                 type = "2D";
@@ -152,7 +148,7 @@ namespace Movieez
                         {
                             var showTimeExists = showTimesFromApi.Any(st =>
                             st.Day == screening.Time.ToString("dd/MM/yyyy") &&
-                            st.Time == screening.Time.ToString("hh:mm"));
+                            st.Time == screening.Time.ToString("HH:mm"));
                             if (!showTimeExists)
                             {
                                 _movieezApiUtils.PostShowTime(screening, movieFromApi.ID);
@@ -177,14 +173,17 @@ namespace Movieez
             AddMovieTrailer(movie);
             AddMovieRating(movie);
             AddMovieReleaseDate(movie);
-            //AddMoviePicture(movie);
+            AddMoviePicture(movie);
+            movie.OriginalLanguage = null;
         }
-        //void AddMoviePicture(Movie movie)
-        //{
-        //    var MovieTrailer = driver.FindElements(By.XPath("/html/body/div[2]/div[4]/div[2]/div[1]/div[1]/div[2]/div[1]/img"));
-        //    var theater = MovieTrailer[0].FindElement(By.XPath(".//*"));
-        //     movie.TrailerUrl = MovieTrailerString;
-        //}
+        void AddMoviePicture(Movie movie)
+        {
+            var elem = driver.FindElements(By.XPath("/html/body/div[2]/div[4]/div[2]/div[1]/div[1]/div[2]/div[1]/img"));
+            string movieimg = elem.ToList()[0].GetAttribute("src");
+            movie.MainImage = movieimg;
+            movie.PosterImage = movieimg;
+        }
+
         void AddMovieRating(Movie movie)
         {
             var movieRating = FindElementsByDriver(By.XPath("/html/body/div[2]/div[4]/div[2]/div[1]/div[1]/div[2]/div[2]/div[2]/div[1]/div[3]/div[2]/div[2]/span"));
@@ -200,7 +199,7 @@ namespace Movieez
         }
 
         void AddMovieTrailer(Movie movie)
-        {                                                 
+        {
             var MovieTrailer = FindElementsByDriver(By.XPath("/html/body/div[2]/div[4]/div[2]/div[1]/div[1]/div[2]/div[2]/div[2]/div[2]/iframe"));
             string MovieTrailerString = MovieTrailer.ToList()[0].GetAttribute("src");
             movie.TrailerUrl = MovieTrailerString;
@@ -210,7 +209,7 @@ namespace Movieez
         {
             movie.Director = null;
             movie.Cast = null;
-           var movieDirectorAndCast = FindElementsByDriver(By.XPath("/html/body/div[2]/div[4]/div[2]/div[1]/div[1]/div[2]/div[2]/div[2]/div[1]/div[2]"));
+            var movieDirectorAndCast = FindElementsByDriver(By.XPath("/html/body/div[2]/div[4]/div[2]/div[1]/div[1]/div[2]/div[2]/div[2]/div[1]/div[2]"));
             string movieDirectorAndCastString = movieDirectorAndCast.ToList()[0].GetAttribute("innerHTML").ToString();
             string[] subs = movieDirectorAndCastString.Split(' ');
             int k = 0;
@@ -218,15 +217,15 @@ namespace Movieez
             {
                 if (subs[i] == "במאי:")
                 {
-                    k = i+1;
-                    while(subs[k]!="")
+                    k = i + 1;
+                    while (subs[k] != "")
                     {
                         movie.Director += subs[k];
                         movie.Director += " ";
-                        k ++;
+                        k++;
                     }
-                    if(movie.Director!=null)
-                    movie.Director = movie.Director.Trim();
+                    if (movie.Director != null)
+                        movie.Director = movie.Director.Trim();
                     i = k;
                 }
 
@@ -315,7 +314,7 @@ namespace Movieez
                     {
                         goToUrl(TheatersUrlList[i]);
                         var theatherName = driver.FindElements(By.XPath("/html/body/div[2]/div[4]/div[1]/div/div/div/div[2]/h1"));
-                        string nameOFtheaterName = theatherName[0].GetAttribute("innerHTML").ToString().Trim();
+                        string nameOFtheaterName = theatherName[0].GetAttribute("innerText");
 
                         var elem = FindElementsByDriver(By.XPath("/html/body/div[2]/div[4]/div[2]/div/div[4]/div[2]/div"));
                         string theatherAdress = elem.ToList()[0].GetAttribute("innerText").ToString().Trim();
@@ -357,13 +356,13 @@ namespace Movieez
             return oDate;
         }
 
-            //var movieFromApi = _movieezApiUtils.GetMovie(movie.Name).Result;
-            //List<Movieez.API.Model.Models.ShowTime> showTimesFromApi = null;
-            //if (movieFromApi != null)
-            //{
-            //    showTimesFromApi = _movieezApiUtils.GetShowTimesByMovieId(movieFromApi.ID).Result;
-            //}
-        
+        //var movieFromApi = _movieezApiUtils.GetMovie(movie.Name).Result;
+        //List<Movieez.API.Model.Models.ShowTime> showTimesFromApi = null;
+        //if (movieFromApi != null)
+        //{
+        //    showTimesFromApi = _movieezApiUtils.GetShowTimesByMovieId(movieFromApi.ID).Result;
+        //}
+
 
     }
 }
