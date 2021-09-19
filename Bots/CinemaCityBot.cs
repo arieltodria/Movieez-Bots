@@ -28,6 +28,7 @@ namespace Movieez
 
         public CinemaCityBot()
         {
+            _movieezApiUtils = new MovieezApiUtils(MovieezApiUtils.e_Theaters.CinemaCity);
             MoviesList = new List<Movie>();
             TheatersList = new List<Theater>();
             ScreeningsList = new List<Showtime>();
@@ -46,7 +47,7 @@ namespace Movieez
             loadAllMovies();
             initMoviesElements();
             int totalMoviesToParse = movies.Count;
-            for(int i = 0; i < totalMoviesToParse; i++)
+            for(int i = 45; i < totalMoviesToParse; i++)
             {
                 try
                 {

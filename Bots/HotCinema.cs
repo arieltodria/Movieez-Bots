@@ -20,6 +20,7 @@ namespace Movieez
         public static new NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
         public HotCinema()
         {
+            _movieezApiUtils = new MovieezApiUtils(MovieezApiUtils.e_Theaters.HotCinema);
             MoviesList = new List<Movie>();
             TheatersList = new List<Theater>();
             ScreeningsList = new List<Showtime>();

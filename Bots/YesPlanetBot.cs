@@ -31,6 +31,7 @@ namespace Movieez
 
         public YesPlanetBot()
         {
+            _movieezApiUtils = new MovieezApiUtils(MovieezApiUtils.e_Theaters.YesPlanet);
             MoviesList = new List<Movie>();
             TheatersList = new List<Theater>();
             ScreeningsList = new List<Showtime>();

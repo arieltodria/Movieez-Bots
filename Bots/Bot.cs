@@ -25,8 +25,9 @@ namespace Movieez
 
         public Bot()
         {
-            _movieezApiUtils = new MovieezApiUtils(MovieezApiUtils.e_Theaters.CinemaCity);
+            
         }
+
         public void initDriver(string botUrl)
         {
             logger.Debug("Initializing driver");

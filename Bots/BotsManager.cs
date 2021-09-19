@@ -22,7 +22,7 @@ namespace Movieez
         public void run()
         {
             System.Threading.Tasks.Task task;
-            System.Action[] bots = { LaunchYesPlanetBot,LaunchCinemaCityBot, LaunchHotCinemaBot };
+            System.Action[] bots = { LanchLevBot, LaunchHotCinemaBot, LaunchYesPlanetBot, LaunchCinemaCityBot };
             while (true)
             {
                 foreach (System.Action bot in bots)
@@ -48,6 +48,7 @@ namespace Movieez
         }
         public void LanchLevBot()
         {
+            logger.Info("Launching Lev bot");
             LevBot lev = new LevBot();
             lev.run();
         }

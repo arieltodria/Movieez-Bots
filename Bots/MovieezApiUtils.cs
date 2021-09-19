@@ -156,7 +156,8 @@ namespace Movieez.Bots
         {
             YesPlanet = 2,
             HotCinema = 4,
-            CinemaCity = 5
+            CinemaCity = 5,
+            Lev = 6
         }
     }
 }
