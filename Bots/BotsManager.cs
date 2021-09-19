@@ -14,10 +14,6 @@ namespace Movieez
             if (runOnStart)
                 run();
         }
-        [SetUp]
-        public void SetUp()
-        {
-        }
 
         public void run()
         {
@@ -38,8 +34,6 @@ namespace Movieez
                 logger.Info("Waking up from sleep.....");
             }
         }
-
-        [Test]
         public void LaunchYesPlanetBot()
         {
             logger.Info("Launching Yes Planet bot");
@@ -52,8 +46,6 @@ namespace Movieez
             LevBot lev = new LevBot();
             lev.run();
         }
-
-        [Test]
         public void LaunchCinemaCityBot()
         {
             logger.Info("Launching Cinema City bot");
@@ -61,7 +53,6 @@ namespace Movieez
             cinemaCity.run();
         }
 
-        [Test]
         public void LaunchHotCinemaBot()
         {
             logger.Info("Launching Hot Cinema bot");

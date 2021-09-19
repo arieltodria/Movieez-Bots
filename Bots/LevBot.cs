@@ -389,7 +389,7 @@ namespace Movieez
                     {
                         var showTimeExists = showTimesFromApi.Any(st =>
                         st.Day == screening.Time.ToString("dd/MM/yyyy") &&
-                        st.Time == screening.Time.ToString("hh:mm"));
+                        st.Time == screening.Time.ToString("HH:mm"));
                         if (!showTimeExists)
                         {
                             _movieezApiUtils.PostShowTime(screening, movieFromApi.ID);
